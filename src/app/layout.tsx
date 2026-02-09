@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Chakra_Petch, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
+import { WalletProvider } from "@/components/wallet";
 
 const chakraPetch = Chakra_Petch({
   variable: "--font-heading",
@@ -38,8 +39,10 @@ export default function RootLayout({
       <body
         className={`${chakraPetch.variable} ${jetbrainsMono.variable} ${inter.variable} antialiased bg-void text-text min-h-screen`}
       >
-        <Navbar />
-        <main className="pt-16">{children}</main>
+        <WalletProvider>
+          <Navbar />
+          <main className="pt-16">{children}</main>
+        </WalletProvider>
       </body>
     </html>
   );
