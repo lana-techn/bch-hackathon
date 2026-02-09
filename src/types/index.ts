@@ -17,6 +17,24 @@ export interface Token {
   isGraduated: boolean;
   holders: number;
   txCount: number;
+  // Additional performance metrics
+  athBCH?: number; // All time high price
+  atlBCH?: number; // All time low price
+  athDate?: string;
+  atlDate?: string;
+  volume7dBCH?: number;
+  volume30dBCH?: number;
+  change7d?: number;
+  change30d?: number;
+  liquidityBCH?: number;
+  topHolders?: { address: string; percentage: number }[];
+  category?: 'meme' | 'defi' | 'nft' | 'gaming' | 'other';
+  socials?: {
+    website?: string;
+    twitter?: string;
+    telegram?: string;
+    discord?: string;
+  };
 }
 
 export interface Trade {
