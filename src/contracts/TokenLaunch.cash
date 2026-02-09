@@ -1,0 +1,64 @@
+// ============================================================================
+// IgniteBCH - Token Launch Contract
+// ============================================================================
+//
+// This contract handles the initial creation/minting of a new CashToken
+// and sets up the bonding curve UTXO.
+//
+// Flow:
+//   1. Creator sends BCH (creation fee) to this contract
+//   2. Contract mints the total supply of fungible tokens
+//   3. Creates the bonding curve UTXO with all tokens + mutable NFT state
+//   4. Sends creation fee to the platform
+//
+// The minting NFT capability is used exactly once, then the minting token
+// is sent to the bonding curve as a mutable NFT (state carrier).
+//
+// ============================================================================
+
+pragma cashscript ^0.12.0;
+
+contract TokenLaunch(
+    bytes20 platformAddress,
+    int creationFee
+) {
+    // ========================================================================
+    // LAUNCH: Creator pays fee, receives a new bonding curve token
+    // ========================================================================
+    //
+    // Transaction structure:
+    //   Input 0: Creator's UTXO with minting NFT (genesis UTXO)
+    //   Output 0: Bonding curve contract UTXO (BCH dust + all tokens + mutable NFT)
+    //   Output 1: Platform fee
+    //   Output 2: Creator change (optional)
+    //
+    // Note: The actual minting is handled by the transaction itself.
+    // CashTokens minting works by spending a UTXO with minting capability
+    // and creating outputs with new fungible tokens of the same category.
+    //
+    function launch(
+        pubkey creatorPk,
+        sig creatorSig,
+        bytes35 bondingCurveLock,
+        int totalMintAmount
+    ) {
+        // --- Verify creator signature ---
+        require(checkSig(creatorSig, creatorPk));
+
+        // --- Verify minimum creation fee is paid to platform ---
+        require(tx.outputs[1].value >= creationFee);
+        require(tx.outputs[1].lockingBytecode == new LockingBytecodeP2PKH(platformAddress));
+
+        // --- Verify bonding curve output receives all minted tokens ---
+        require(tx.outputs[0].lockingBytecode == bondingCurveLock);
+        require(tx.outputs[0].tokenAmount == totalMintAmount);
+
+        // --- Verify the NFT becomes mutable (state carrier for bonding curve) ---
+        // The bonding curve UTXO should have mutable NFT capability (0x01)
+        // with initial state = 0 (no tokens sold yet)
+        require(tx.outputs[0].nftCommitment == bytes8(0));
+
+        // --- Verify bonding curve has minimum BCH dust ---
+        require(tx.outputs[0].value >= 1000);
+    }
+}

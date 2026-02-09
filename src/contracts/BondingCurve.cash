@@ -1,0 +1,199 @@
+// ============================================================================
+// IgniteBCH - Bonding Curve Covenant Contract
+// ============================================================================
+//
+// This covenant contract implements a linear bonding curve for CashTokens.
+//
+// Architecture:
+//   - The contract UTXO holds BCH (reserve) + unsold fungible tokens
+//   - A mutable NFT commitment stores the current state (supply sold)
+//   - Price formula: P = SLOPE * supplySold (linear curve)
+//   - Cost to buy tokens from S to S+dS: SLOPE/2 * ((S+dS)^2 - S^2)
+//   - Since CashScript has no sqrt(), we verify the cost constraint instead
+//     of computing exact token output
+//
+// State (stored in NFT commitment, 8 bytes):
+//   - bytes8: currentSupplySold (int, scaled by 1)
+//
+// Parameters (constructor):
+//   - tokenCategory: bytes32 - the CashToken category ID (unreversed)
+//   - feeAddress: bytes20 - P2PKH hash of the fee collection address
+//   - slope: int - bonding curve slope (scaled by PRECISION)
+//   - graduationTarget: int - BCH target in satoshis (e.g., 40 * 1e8)
+//   - curveSupply: int - max tokens available on curve (e.g., 800_000_000)
+//
+// ============================================================================
+
+pragma cashscript ^0.12.0;
+
+contract BondingCurve(
+    bytes32 tokenCategory,
+    bytes20 feeAddress,
+    int slope,
+    int graduationTarget,
+    int curveSupply
+) {
+    // ========================================================================
+    // BUY: User sends BCH, receives fungible tokens from the curve
+    // ========================================================================
+    //
+    // Transaction structure:
+    //   Input 0: This contract UTXO (BCH + tokens + mutable NFT)
+    //   Input 1: User's BCH input(s) - handled externally
+    //   Output 0: Updated contract UTXO (more BCH, fewer tokens, updated state)
+    //   Output 1: User receives purchased tokens
+    //   Output 2: Fee output to feeAddress
+    //   (Output 3+: optional change back to user)
+    //
+    function buy(int tokensToBuy) {
+        // --- Validate tokensToBuy ---
+        require(tokensToBuy > 0);
+
+        // --- Read current state from NFT commitment ---
+        int currentSupplySold = int(tx.inputs[this.activeInputIndex].nftCommitment);
+
+        // --- Calculate new supply after buy ---
+        int newSupplySold = currentSupplySold + tokensToBuy;
+        require(newSupplySold <= curveSupply);
+
+        // --- Calculate cost using linear bonding curve ---
+        // Cost = (slope / 2) * (newSupply^2 - currentSupply^2)
+        // Since we use integer math and slope is pre-scaled by PRECISION (1e8):
+        // cost = slope * (newSupply^2 - currentSupply^2) / (2 * PRECISION)
+        int newSquared = newSupplySold * newSupplySold;
+        int oldSquared = currentSupplySold * currentSupplySold;
+        int rawCost = slope * (newSquared - oldSquared);
+        int cost = rawCost / 200000000; // divide by 2 * PRECISION (2 * 1e8)
+
+        // --- Calculate fee (1%) ---
+        int fee = cost / 100;
+        require(fee >= 546); // minimum dust limit for fee output
+
+        // --- Enforce self-preservation (covenant) ---
+        // Output 0 must go back to this contract
+        bytes contractBytecode = tx.inputs[this.activeInputIndex].lockingBytecode;
+        require(tx.outputs[0].lockingBytecode == contractBytecode);
+
+        // --- Enforce token category persists (mutable NFT + fungible tokens) ---
+        // The contract input has mutable NFT capability (0x01 suffix)
+        bytes inputCategory = tx.inputs[this.activeInputIndex].tokenCategory;
+        require(tx.outputs[0].tokenCategory == inputCategory);
+
+        // --- Enforce updated NFT commitment (state update) ---
+        require(tx.outputs[0].nftCommitment == bytes8(newSupplySold));
+
+        // --- Enforce token balance: contract keeps remaining tokens ---
+        int inputTokens = tx.inputs[this.activeInputIndex].tokenAmount;
+        require(tx.outputs[0].tokenAmount == inputTokens - tokensToBuy);
+
+        // --- Enforce BCH balance: contract receives the cost ---
+        int inputValue = tx.inputs[this.activeInputIndex].value;
+        require(tx.outputs[0].value >= inputValue + cost);
+
+        // --- Enforce user receives purchased tokens (Output 1) ---
+        // We verify the token amount, but allow any destination address
+        require(tx.outputs[1].tokenAmount == tokensToBuy);
+        require(tx.outputs[1].tokenCategory == tokenCategory);
+
+        // --- Enforce fee output (Output 2) ---
+        require(tx.outputs[2].value >= fee);
+        require(tx.outputs[2].lockingBytecode == new LockingBytecodeP2PKH(feeAddress));
+    }
+
+    // ========================================================================
+    // SELL: User returns tokens, receives BCH from the curve reserve
+    // ========================================================================
+    //
+    // Transaction structure:
+    //   Input 0: This contract UTXO (BCH + tokens + mutable NFT)
+    //   Input 1: User's token UTXO (tokens to sell)
+    //   Output 0: Updated contract UTXO (less BCH, more tokens, updated state)
+    //   Output 1: User receives BCH proceeds
+    //   Output 2: Fee output to feeAddress
+    //
+    function sell(int tokensToSell) {
+        // --- Validate ---
+        require(tokensToSell > 0);
+
+        // --- Read current state ---
+        int currentSupplySold = int(tx.inputs[this.activeInputIndex].nftCommitment);
+        require(tokensToSell <= currentSupplySold);
+
+        // --- Calculate new supply after sell ---
+        int newSupplySold = currentSupplySold - tokensToSell;
+
+        // --- Calculate return using linear bonding curve ---
+        // Return = (slope / 2) * (currentSupply^2 - newSupply^2)
+        int oldSquared = currentSupplySold * currentSupplySold;
+        int newSquared = newSupplySold * newSupplySold;
+        int rawReturn = slope * (oldSquared - newSquared);
+        int grossReturn = rawReturn / 200000000; // divide by 2 * PRECISION
+
+        // --- Calculate fee (1%) ---
+        int fee = grossReturn / 100;
+        int netReturn = grossReturn - fee;
+        require(fee >= 546); // minimum dust
+
+        // --- Enforce self-preservation ---
+        bytes contractBytecode = tx.inputs[this.activeInputIndex].lockingBytecode;
+        require(tx.outputs[0].lockingBytecode == contractBytecode);
+
+        // --- Enforce token category persists ---
+        bytes inputCategory = tx.inputs[this.activeInputIndex].tokenCategory;
+        require(tx.outputs[0].tokenCategory == inputCategory);
+
+        // --- Enforce updated state ---
+        require(tx.outputs[0].nftCommitment == bytes8(newSupplySold));
+
+        // --- Enforce token balance: contract gets back the sold tokens ---
+        int inputTokens = tx.inputs[this.activeInputIndex].tokenAmount;
+        require(tx.outputs[0].tokenAmount == inputTokens + tokensToSell);
+
+        // --- Enforce BCH balance: contract sends out the return ---
+        int inputValue = tx.inputs[this.activeInputIndex].value;
+        require(tx.outputs[0].value >= inputValue - grossReturn);
+
+        // --- Enforce user receives BCH (Output 1) ---
+        require(tx.outputs[1].value >= netReturn);
+
+        // --- Enforce fee output (Output 2) ---
+        require(tx.outputs[2].value >= fee);
+        require(tx.outputs[2].lockingBytecode == new LockingBytecodeP2PKH(feeAddress));
+    }
+
+    // ========================================================================
+    // GRADUATE: Migrate liquidity to DEX when graduation target is met
+    // ========================================================================
+    //
+    // When the BCH reserve reaches the graduation target, anyone can trigger
+    // migration. The BCH + remaining tokens are sent to a DEX pool.
+    //
+    // Transaction structure:
+    //   Input 0: This contract UTXO
+    //   Output 0: DEX pool receives BCH + remaining tokens
+    //   Output 1: Fee output
+    //
+    function graduate(bytes32 dexPoolScriptHash) {
+        // --- Verify graduation threshold met ---
+        int reserveBalance = tx.inputs[this.activeInputIndex].value;
+        require(reserveBalance >= graduationTarget);
+
+        // --- All BCH + tokens go to the DEX pool ---
+        // DEX pool script hash provided as argument (verified off-chain)
+        bytes35 dexLockingBytecode = new LockingBytecodeP2SH32(dexPoolScriptHash);
+
+        // Send BCH to DEX (minus fee)
+        int fee = reserveBalance / 100; // 1% graduation fee
+        require(tx.outputs[0].value >= reserveBalance - fee);
+        require(tx.outputs[0].lockingBytecode == dexLockingBytecode);
+
+        // Send remaining tokens to DEX
+        int remainingTokens = tx.inputs[this.activeInputIndex].tokenAmount;
+        require(tx.outputs[0].tokenAmount >= remainingTokens);
+        require(tx.outputs[0].tokenCategory == tokenCategory);
+
+        // Fee output
+        require(tx.outputs[1].value >= fee);
+        require(tx.outputs[1].lockingBytecode == new LockingBytecodeP2PKH(feeAddress));
+    }
+}

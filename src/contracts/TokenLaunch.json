@@ -1,0 +1,78 @@
+{
+  "contractName": "TokenLaunch",
+  "constructorInputs": [
+    {
+      "name": "platformAddress",
+      "type": "bytes20"
+    },
+    {
+      "name": "creationFee",
+      "type": "int"
+    }
+  ],
+  "abi": [
+    {
+      "name": "launch",
+      "inputs": [
+        {
+          "name": "creatorPk",
+          "type": "pubkey"
+        },
+        {
+          "name": "creatorSig",
+          "type": "sig"
+        },
+        {
+          "name": "bondingCurveLock",
+          "type": "bytes35"
+        },
+        {
+          "name": "totalMintAmount",
+          "type": "int"
+        }
+      ]
+    }
+  ],
+  "bytecode": "OP_2SWAP OP_CHECKSIGVERIFY OP_1 OP_OUTPUTVALUE OP_ROT OP_GREATERTHANOREQUAL OP_VERIFY OP_1 OP_OUTPUTBYTECODE 76a914 OP_ROT OP_CAT 88ac OP_CAT OP_EQUALVERIFY OP_0 OP_OUTPUTBYTECODE OP_EQUALVERIFY OP_0 OP_OUTPUTTOKENAMOUNT OP_NUMEQUALVERIFY OP_0 OP_OUTPUTTOKENCOMMITMENT OP_0 OP_8 OP_NUM2BIN OP_EQUALVERIFY OP_0 OP_OUTPUTVALUE e803 OP_GREATERTHANOREQUAL",
+  "source": "// ============================================================================\n// IgniteBCH - Token Launch Contract\n// ============================================================================\n//\n// This contract handles the initial creation/minting of a new CashToken\n// and sets up the bonding curve UTXO.\n//\n// Flow:\n//   1. Creator sends BCH (creation fee) to this contract\n//   2. Contract mints the total supply of fungible tokens\n//   3. Creates the bonding curve UTXO with all tokens + mutable NFT state\n//   4. Sends creation fee to the platform\n//\n// The minting NFT capability is used exactly once, then the minting token\n// is sent to the bonding curve as a mutable NFT (state carrier).\n//\n// ============================================================================\n\npragma cashscript ^0.12.0;\n\ncontract TokenLaunch(\n    bytes20 platformAddress,\n    int creationFee\n) {\n    // ========================================================================\n    // LAUNCH: Creator pays fee, receives a new bonding curve token\n    // ========================================================================\n    //\n    // Transaction structure:\n    //   Input 0: Creator's UTXO with minting NFT (genesis UTXO)\n    //   Output 0: Bonding curve contract UTXO (BCH dust + all tokens + mutable NFT)\n    //   Output 1: Platform fee\n    //   Output 2: Creator change (optional)\n    //\n    // Note: The actual minting is handled by the transaction itself.\n    // CashTokens minting works by spending a UTXO with minting capability\n    // and creating outputs with new fungible tokens of the same category.\n    //\n    function launch(\n        pubkey creatorPk,\n        sig creatorSig,\n        bytes35 bondingCurveLock,\n        int totalMintAmount\n    ) {\n        // --- Verify creator signature ---\n        require(checkSig(creatorSig, creatorPk));\n\n        // --- Verify minimum creation fee is paid to platform ---\n        require(tx.outputs[1].value >= creationFee);\n        require(tx.outputs[1].lockingBytecode == new LockingBytecodeP2PKH(platformAddress));\n\n        // --- Verify bonding curve output receives all minted tokens ---\n        require(tx.outputs[0].lockingBytecode == bondingCurveLock);\n        require(tx.outputs[0].tokenAmount == totalMintAmount);\n\n        // --- Verify the NFT becomes mutable (state carrier for bonding curve) ---\n        // The bonding curve UTXO should have mutable NFT capability (0x01)\n        // with initial state = 0 (no tokens sold yet)\n        require(tx.outputs[0].nftCommitment == bytes8(0));\n\n        // --- Verify bonding curve has minimum BCH dust ---\n        require(tx.outputs[0].value >= 1000);\n    }\n}\n",
+  "debug": {
+    "bytecode": "72ad51cc7ba26951cd0376a9147b7e0288ac7e8800cd8800d39d00d20058808800cc02e803a2",
+    "sourceMap": "46:25:46:46;:8::49:1;49:27:49:28:0;:16::35:1;:39::50:0;:16:::1;:8::52;50:27:50:28:0;:16::45:1;:49::90:0;:74::89;:49::90:1;;;:8::92;53:27:53:28:0;:16::45:1;:8::67;54:27:54:28:0;:16::41:1;:8::62;59:27:59:28:0;:16::43:1;:54::55:0;:47::56:1;;:8::58;62:27:62:28:0;:16::35:1;:39::43:0;:8::45:1",
+    "logs": [],
+    "requires": [
+      {
+        "ip": 3,
+        "line": 46
+      },
+      {
+        "ip": 8,
+        "line": 49
+      },
+      {
+        "ip": 16,
+        "line": 50
+      },
+      {
+        "ip": 19,
+        "line": 53
+      },
+      {
+        "ip": 22,
+        "line": 54
+      },
+      {
+        "ip": 28,
+        "line": 59
+      },
+      {
+        "ip": 33,
+        "line": 62
+      }
+    ]
+  },
+  "compiler": {
+    "name": "cashc",
+    "version": "0.12.1"
+  },
+  "updatedAt": "2026-02-09T07:22:22.389Z"
+}

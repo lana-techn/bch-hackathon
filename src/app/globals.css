@@ -1,26 +1,151 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* === Toxic Ledger Color Palette === */
+  --color-void: #050505;
+  --color-card: #121212;
+  --color-neon: #00FFA3;
+  --color-panic: #FF2E2E;
+  --color-warn: #FFE600;
+  --color-border: #333333;
+  --color-text: #F0F0F0;
+  --color-text-dim: #888888;
+
+  /* Semantic aliases */
+  --color-background: #050505;
+  --color-foreground: #F0F0F0;
+  --color-primary: #00FFA3;
+  --color-danger: #FF2E2E;
+
+  /* === Fonts === */
+  --font-heading: "Chakra Petch", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --font-body: "Inter", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* === Global Base Styles === */
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-void);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === Scrollbar === */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-void);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-neon);
+}
+
+/* === Selection === */
+::selection {
+  background: var(--color-neon);
+  color: var(--color-void);
+}
+
+/* === Neo-Brutalist Utilities === */
+.brutal-border {
+  border: 3px solid var(--color-border);
+}
+
+.brutal-border-neon {
+  border: 3px solid var(--color-neon);
+}
+
+.brutal-shadow {
+  box-shadow: 4px 4px 0px #000;
+}
+
+.brutal-shadow-neon {
+  box-shadow: 4px 4px 0px var(--color-neon);
+}
+
+/* === Button Press Effect === */
+.brutal-btn {
+  box-shadow: 4px 4px 0px #000;
+  transition: transform 0.05s, box-shadow 0.05s;
+}
+
+.brutal-btn:active {
+  transform: translate(4px, 4px);
+  box-shadow: none;
+}
+
+/* === Glitch Animation === */
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+.glitch-hover:hover {
+  animation: glitch 0.3s ease-in-out;
+}
+
+/* === Shake Animation === */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+/* === Pulse Glow === */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px var(--color-neon); }
+  50% { box-shadow: 0 0 20px var(--color-neon), 0 0 40px rgba(0, 255, 163, 0.3); }
+}
+
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* === Scanline Overlay === */
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1) 0px,
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* === Number formatting === */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+/* === Progress bar for bonding curve === */
+.progress-bar {
+  background: linear-gradient(90deg, var(--color-neon) 0%, var(--color-warn) 100%);
 }

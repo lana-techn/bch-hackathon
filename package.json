@@ -6,12 +6,20 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "contracts:compile": "cashc src/contracts/BondingCurve.cash -o src/contracts/BondingCurve.json && cashc src/contracts/TokenLaunch.cash -o src/contracts/TokenLaunch.json",
+    "deploy:token": "tsx scripts/deploy-token.ts"
   },
   "dependencies": {
+    "@bitauth/libauth": "^3.0.0",
+    "@cashscript/utils": "^0.12.1",
+    "cashc": "^0.12.1",
+    "cashscript": "^0.12.1",
+    "dotenv": "^17.2.4",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -21,6 +29,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
