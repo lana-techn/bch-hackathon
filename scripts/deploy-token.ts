@@ -1,5 +1,5 @@
 /**
- * IgniteBCH - Token Deployment Script
+ * IiteBCH - Token Deployment Script
  *
  * Deploys a new bonding curve token on Bitcoin Cash (chipnet or mainnet).
  *
@@ -192,7 +192,7 @@ async function waitForUtxo(
 async function deploy() {
   const config = loadConfig();
 
-  log('INIT', `Deploying new IgniteBCH token on ${config.network}`);
+  log('INIT', `Deploying new IiteBCH token on ${config.network}`);
 
   // --- Setup provider and signer ---
   const providerOptions = config.electrumHost
