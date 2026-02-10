@@ -1,5 +1,5 @@
 /**
- * IgniteBCH - WalletConnect Hook
+ * IiteBCH - WalletConnect Hook
  *
  * Hook untuk connect ke wallet via WalletConnect v2 (BCH WalletConnect spec)
  * Digunakan oleh Cashonize dan wallet mobile lainnya
@@ -49,10 +49,10 @@ export function useWalletConnect() {
       const client = await SignClient.init({
         projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'demo',
         metadata: {
-          name: 'IgniteBCH',
+          name: 'IiteBCH',
           description: 'Fair Launch Protocol on Bitcoin Cash',
-          url: typeof window !== 'undefined' ? window.location.origin : 'https://ignitebch.com',
-          icons: ['https://ignitebch.com/icon.png'],
+          url: typeof window !== 'undefined' ? window.location.origin : 'https://Iitebch.com',
+          icons: ['https://Iitebch.com/icon.png'],
         },
       });
 
