@@ -56,7 +56,7 @@ export function Navbar() {
                 </span>
               </div>
               <span className="font-[family-name:var(--font-heading)] text-xl font-bold uppercase tracking-wider text-text group-hover:text-neon transition-colors">
-                Ignite<span className="text-neon">BCH</span>
+                Iite<span className="text-neon">BCH</span>
               </span>
             </Link>
 
@@ -177,7 +177,7 @@ export function Navbar() {
             </span>
           </div>
           <span className="font-[family-name:var(--font-heading)] text-xl font-bold uppercase tracking-wider text-text group-hover:text-neon transition-colors">
-            Ignite<span className="text-neon">BCH</span>
+            Iite<span className="text-neon">BCH</span>
           </span>
         </Link>
 
