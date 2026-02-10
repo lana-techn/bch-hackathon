@@ -1,5 +1,5 @@
 // ============================================================================
-// IgniteBCH - Bonding Curve Covenant Contract
+// IiteBCH - Bonding Curve Covenant Contract
 // ============================================================================
 //
 // This covenant contract implements a linear bonding curve for CashTokens.
