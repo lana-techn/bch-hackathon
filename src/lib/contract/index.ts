@@ -1,5 +1,5 @@
 /**
- * IgniteBCH Contract SDK - Public API
+ * IiteBCH Contract SDK - Public API
  *
  * Client-safe exports from constants.ts
  * Server-only exports should be imported directly from './sdk'
