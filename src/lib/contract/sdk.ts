@@ -1,5 +1,5 @@
 /**
- * IgniteBCH - Contract SDK (Server-side only)
+ * IiteBCH - Contract SDK (Server-side only)
  *
  * TypeScript interaction layer for the CashScript smart contracts.
  * Handles contract instantiation, quote generation, state parsing,
