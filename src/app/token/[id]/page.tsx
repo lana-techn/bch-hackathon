@@ -1,7 +1,7 @@
 import { mockTokens } from "@/data/mock-tokens";
 import { getTradesForToken, getCommentsForToken } from "@/data/mock-tokens";
 import { formatBCH, formatNumber, formatPercent, shortenAddress } from "@/lib/format";
-import { PriceChart } from "@/components/trading/PriceChart";
+import { TradingViewChart } from "@/components/trading/TradingViewChart";
 import { VolumeChart } from "@/components/trading/VolumeChart";
 import { TradePanel } from "@/components/trading/TradePanel";
 import { TradeHistory } from "@/components/trading/TradeHistory";
@@ -207,8 +207,8 @@ export default async function TokenPage({ params }: TokenPageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Charts & History (Takes up 2 columns on large screens) */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Price Chart */}
-            <PriceChart />
+            {/* Trading View Chart - Price & Candlestick */}
+            <TradingViewChart />
             
             {/* Volume Chart */}
             <VolumeChart />
