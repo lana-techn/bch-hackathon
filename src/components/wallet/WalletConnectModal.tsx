@@ -1,5 +1,5 @@
 /**
- * IgniteBCH - WalletConnect Modal
+ * IiteBCH - WalletConnect Modal
  *
  * Modal untuk menampilkan QR code dan URI untuk WalletConnect
  */
