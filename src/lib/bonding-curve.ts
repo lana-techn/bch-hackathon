@@ -1,5 +1,5 @@
 /**
- * IgniteBCH Bonding Curve Mathematics
+ * IiteBCH Bonding Curve Mathematics
  *
  * Uses a Linear Bonding Curve: P = m * S
  * Where:
