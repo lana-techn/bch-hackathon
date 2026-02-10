@@ -1,5 +1,5 @@
 /**
- * IgniteBCH - Wallet Provider
+ * IiteBCH - Wallet Provider
  *
  * React Context untuk wallet BCH
  * 
