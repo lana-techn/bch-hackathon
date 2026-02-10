@@ -1,5 +1,5 @@
 /**
- * IgniteBCH - Environment Configuration
+ * IiteBCH - Environment Configuration
  *
  * Validates and provides typed access to environment variables.
  * Used by deployment scripts and server-side code.
