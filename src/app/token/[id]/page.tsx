@@ -2,6 +2,7 @@ import { mockTokens } from "@/data/mock-tokens";
 import { getTradesForToken, getCommentsForToken } from "@/data/mock-tokens";
 import { formatBCH, formatNumber, formatPercent, shortenAddress } from "@/lib/format";
 import { PriceChart } from "@/components/trading/PriceChart";
+import { VolumeChart } from "@/components/trading/VolumeChart";
 import { TradePanel } from "@/components/trading/TradePanel";
 import { TradeHistory } from "@/components/trading/TradeHistory";
 import { CommentStream } from "@/components/social/CommentStream";
@@ -29,7 +30,7 @@ export default async function TokenPage({ params }: TokenPageProps) {
 
   return (
     <div className="min-h-screen bg-void">
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-6">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 py-6">
         {/* Breadcrumb */}
         <Link
           href="/"
@@ -40,9 +41,9 @@ export default async function TokenPage({ params }: TokenPageProps) {
 
         {/* Token Header Card */}
         <div className="bg-card border-3 border-border mb-6">
-          {/* Top Section */}
-          <div className="p-4 md:p-6">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          {/* Top Section - Token Identity & Price */}
+          <div className="p-4 md:p-6 border-b-2 border-border">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               {/* Left: Token Info */}
               <div className="flex items-center gap-4">
                 {/* Token Avatar */}
@@ -82,8 +83,8 @@ export default async function TokenPage({ params }: TokenPageProps) {
                 </div>
               </div>
 
-              {/* Right: Price Info */}
-              <div className="flex items-center gap-6 md:gap-8">
+              {/* Right: Price & Change */}
+              <div className="flex items-center gap-8">
                 <div className="text-right">
                   <p className="font-[family-name:var(--font-heading)] text-xs uppercase text-text-dim">
                     Current Price
@@ -117,109 +118,119 @@ export default async function TokenPage({ params }: TokenPageProps) {
                 </div>
               </div>
             </div>
-
-            {/* Quick Stats Bar */}
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mt-6 pt-6 border-t-2 border-border">
-              <div>
-                <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim">
-                  Market Cap
-                </p>
-                <p className="font-[family-name:var(--font-mono)] text-lg font-bold text-text tabular-nums">
-                  {formatBCH(token.marketCapBCH, 2)}
-                </p>
-              </div>
-              <div>
-                <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim">
-                  24h Volume
-                </p>
-                <p className="font-[family-name:var(--font-mono)] text-lg font-bold text-text tabular-nums">
-                  {formatBCH(token.volume24hBCH, 2)}
-                </p>
-              </div>
-              <div>
-                <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim">
-                  Holders
-                </p>
-                <p className="font-[family-name:var(--font-mono)] text-lg font-bold text-text tabular-nums">
-                  {formatNumber(token.holders)}
-                </p>
-              </div>
-              <div>
-                <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim">
-                  Supply Sold
-                </p>
-                <p className="font-[family-name:var(--font-mono)] text-lg font-bold text-text tabular-nums">
-                  {supplyPercentage.toFixed(1)}%
-                </p>
-              </div>
-              <div>
-                <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim">
-                  Tx Count
-                </p>
-                <p className="font-[family-name:var(--font-mono)] text-lg font-bold text-text tabular-nums">
-                  {formatNumber(token.txCount)}
-                </p>
-              </div>
-              <div>
-                <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim">
-                  Progress
-                </p>
-                <p className="font-[family-name:var(--font-mono)] text-lg font-bold text-warn tabular-nums">
-                  {graduationProgress.toFixed(1)}%
-                </p>
-              </div>
-            </div>
           </div>
 
-          {/* Graduation Progress Bar */}
-          <div className="px-4 md:px-6 pb-4 md:pb-6">
-            <div className="w-full h-4 bg-void border-2 border-border">
-              <div
-                className="h-full progress-bar transition-all duration-500"
-                style={{
-                  width: `${Math.min(graduationProgress, 100)}%`,
-                }}
-              />
-            </div>
-            <div className="flex justify-between mt-2 text-xs">
-              <span className="font-[family-name:var(--font-heading)] text-text-dim uppercase">
-                Bonding Curve Progress
-              </span>
-              <span className="font-[family-name:var(--font-mono)] text-text-dim">
-                {formatBCH(token.marketCapBCH, 2)} / {formatBCH(token.graduationTarget, 0)} BCH
-              </span>
-            </div>
-          </div>
-
-          {/* Description */}
-          {token.description && (
-            <div className="px-4 md:px-6 pb-4 md:pb-6 border-t-2 border-border pt-4">
-              <p className="text-sm text-text-dim leading-relaxed">
-                {token.description}
+          {/* Middle Section - Quick Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-0 border-b-2 border-border">
+            <div className="p-4 border-r-2 border-border">
+              <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim mb-1">
+                Market Cap
+              </p>
+              <p className="font-[family-name:var(--font-mono)] text-xl font-bold text-text tabular-nums">
+                {formatBCH(token.marketCapBCH, 2)}
               </p>
             </div>
-          )}
+            <div className="p-4 lg:border-r-2 border-border">
+              <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim mb-1">
+                24h Volume
+              </p>
+              <p className="font-[family-name:var(--font-mono)] text-xl font-bold text-text tabular-nums">
+                {formatBCH(token.volume24hBCH, 2)}
+              </p>
+            </div>
+            <div className="p-4 border-r-2 border-border">
+              <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim mb-1">
+                Holders
+              </p>
+              <p className="font-[family-name:var(--font-mono)] text-xl font-bold text-text tabular-nums">
+                {formatNumber(token.holders)}
+              </p>
+            </div>
+            <div className="p-4 lg:border-r-2 border-border">
+              <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim mb-1">
+                Supply Sold
+              </p>
+              <p className="font-[family-name:var(--font-mono)] text-xl font-bold text-text tabular-nums">
+                {supplyPercentage.toFixed(1)}%
+              </p>
+            </div>
+            <div className="p-4 border-r-2 border-border">
+              <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim mb-1">
+                Transactions
+              </p>
+              <p className="font-[family-name:var(--font-mono)] text-xl font-bold text-text tabular-nums">
+                {formatNumber(token.txCount)}
+              </p>
+            </div>
+            <div className="p-4">
+              <p className="font-[family-name:var(--font-heading)] text-[10px] uppercase text-text-dim mb-1">
+                Graduation
+              </p>
+              <p className="font-[family-name:var(--font-mono)] text-xl font-bold text-warn tabular-nums">
+                {graduationProgress.toFixed(1)}%
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom Section - Graduation Progress Bar & Description */}
+          <div className="p-4 md:p-6 space-y-4">
+            {/* Graduation Progress Bar */}
+            <div>
+              <div className="w-full h-4 bg-void border-2 border-border">
+                <div
+                  className="h-full progress-bar transition-all duration-500"
+                  style={{
+                    width: `${Math.min(graduationProgress, 100)}%`,
+                  }}
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-xs">
+                <span className="font-[family-name:var(--font-heading)] text-text-dim uppercase">
+                  Bonding Curve Progress
+                </span>
+                <span className="font-[family-name:var(--font-mono)] text-text-dim">
+                  {formatBCH(token.marketCapBCH, 2)} / {formatBCH(token.graduationTarget, 0)} BCH
+                </span>
+              </div>
+            </div>
+
+            {/* Description */}
+            {token.description && (
+              <p className="text-sm text-text-dim leading-relaxed border-t-2 border-border pt-4">
+                {token.description}
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          {/* Left Column: Chart + Trade History */}
-          <div className="xl:col-span-2 space-y-6">
+        {/* Main Content Grid - 3 Columns */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Charts & History (Takes up 2 columns on large screens) */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Price Chart */}
             <PriceChart />
+            
+            {/* Volume Chart */}
+            <VolumeChart />
+            
+            {/* Trade History */}
             <TradeHistory trades={trades} />
           </div>
 
-          {/* Middle Column: Performance Stats */}
+          {/* Right Column - Stats, Trading & Chat */}
           <div className="space-y-6">
+            {/* Trade Panel - Sticky for easy access */}
+            <div className="lg:sticky lg:top-20">
+              <TradePanel
+                tokenTicker={token.ticker}
+                currentSupplySold={token.currentSupply}
+              />
+            </div>
+            
+            {/* Performance Stats */}
             <TokenPerformanceStats token={token} />
-          </div>
-
-          {/* Right Column: Trade Panel + Chat */}
-          <div className="space-y-6">
-            <TradePanel
-              tokenTicker={token.ticker}
-              currentSupplySold={token.currentSupply}
-            />
+            
+            {/* Comment Stream */}
             <CommentStream comments={comments} tokenId={token.id} />
           </div>
         </div>
