@@ -1,5 +1,5 @@
 /**
- * IgniteBCH Contract Constants
+ * IiteBCH Contract Constants
  *
  * Shared constants between on-chain (CashScript) and off-chain (TypeScript) code.
  */
