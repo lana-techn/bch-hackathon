@@ -1,5 +1,5 @@
 /**
- * IgniteBCH - Connect Wallet Button
+ * IiteBCH - Connect Wallet Button
  *
  * Button untuk connect wallet dengan style Toxic Ledger (neo-brutalist).
  * Support Paytaca Extension & Cashonize Web Wallet
