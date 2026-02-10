@@ -1,5 +1,5 @@
 /**
- * Format utilities for IgniteBCH
+ * Format utilities for IiteBCH
  */
 
 export function formatBCH(amount: number, decimals = 4): string {
