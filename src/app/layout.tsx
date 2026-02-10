@@ -4,6 +4,7 @@ import "./globals.css";
 import { Suspense } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { WalletProvider } from "@/components/wallet";
+import { LazyMotion, domAnimation } from "framer-motion";
 
 // Optimize fonts with display: swap
 const chakraPetch = Chakra_Petch({
@@ -126,12 +127,14 @@ export default function RootLayout({
       <body
         className={`${chakraPetch.variable} ${jetbrainsMono.variable} ${inter.variable} antialiased bg-void text-text min-h-screen`}
       >
-        <WalletProvider>
-          <Navbar />
-          <Suspense fallback={<MainLoading />}>
-            <main className="pt-16">{children}</main>
-          </Suspense>
-        </WalletProvider>
+        <LazyMotion features={domAnimation} strict>
+          <WalletProvider>
+            <Navbar />
+            <Suspense fallback={<MainLoading />}>
+              <main className="pt-16">{children}</main>
+            </Suspense>
+          </WalletProvider>
+        </LazyMotion>
       </body>
     </html>
   );
