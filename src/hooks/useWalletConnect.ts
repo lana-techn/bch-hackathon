@@ -1,8 +1,11 @@
 /**
- * IiteBCH - WalletConnect Hook
+ * IgniteBCH - WalletConnect Hook
  *
  * Hook untuk connect ke wallet via WalletConnect v2 (BCH WalletConnect spec)
  * Digunakan oleh Cashonize dan wallet mobile lainnya
+ * 
+ * NOTE: Requires NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID environment variable
+ * Get one free at: https://cloud.walletconnect.com
  */
 
 'use client';
@@ -28,31 +31,41 @@ interface WalletConnectState {
   session: any | null;
   isConnecting: boolean;
   error: string | null;
+  isConfigured: boolean;
 }
 
 export function useWalletConnect() {
+  const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID;
+  const isConfigured = !!projectId && projectId !== 'demo' && projectId.length > 10;
+
   const [state, setState] = useState<WalletConnectState>({
     client: null,
     uri: null,
     session: null,
     isConnecting: false,
     error: null,
+    isConfigured,
   });
   
   const clientRef = useRef<SignClient | null>(null);
 
   // Initialize WalletConnect client
   const initClient = useCallback(async () => {
+    if (!isConfigured) {
+      console.warn('WalletConnect: No valid project ID configured');
+      return null;
+    }
+
     if (clientRef.current) return clientRef.current;
 
     try {
       const client = await SignClient.init({
-        projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'demo',
+        projectId: projectId!,
         metadata: {
-          name: 'IiteBCH',
+          name: 'IgniteBCH',
           description: 'Fair Launch Protocol on Bitcoin Cash',
-          url: typeof window !== 'undefined' ? window.location.origin : 'https://Iitebch.com',
-          icons: ['https://Iitebch.com/icon.png'],
+          url: typeof window !== 'undefined' ? window.location.origin : 'https://ignitebch.com',
+          icons: ['https://ignitebch.com/icon.png'],
         },
       });
 
@@ -84,10 +97,18 @@ export function useWalletConnect() {
       setState(prev => ({ ...prev, error: 'Failed to initialize WalletConnect' }));
       return null;
     }
-  }, []);
+  }, [isConfigured, projectId]);
 
   // Connect to wallet
   const connect = useCallback(async () => {
+    if (!isConfigured) {
+      setState(prev => ({ 
+        ...prev, 
+        error: 'WalletConnect not configured. Please set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID in .env.local' 
+      }));
+      throw new Error('WalletConnect not configured');
+    }
+
     setState(prev => ({ ...prev, isConnecting: true, error: null, uri: null }));
 
     try {
@@ -122,7 +143,7 @@ export function useWalletConnect() {
       }));
       throw err;
     }
-  }, [initClient]);
+  }, [initClient, isConfigured]);
 
   // Disconnect
   const disconnect = useCallback(async () => {
