@@ -1,20 +1,36 @@
 'use client';
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useWallet, formatAddress, WalletConnectModal } from "@/components/wallet";
 
 export function Navbar() {
-  const { isConnected, isConnecting, wallet, connect, disconnect, isInstalled } = useWallet();
+  const { isConnected, isConnecting, wallet, connect, connectWalletConnect, disconnect, isInstalled } = useWallet();
   const [showWalletOptions, setShowWalletOptions] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showWalletConnect, setShowWalletConnect] = useState(false);
+  const [forceRender, setForceRender] = useState(0);
+
+  // Force re-render when wallet state changes
+  useEffect(() => {
+    console.log('[Navbar] Wallet state changed:', { isConnected, address: wallet?.cashAddress });
+    setForceRender(prev => prev + 1);
+  }, [isConnected, wallet?.cashAddress]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('[Navbar] Render:', { isConnected, wallet: wallet?.cashAddress, forceRender });
+  }, [isConnected, wallet, forceRender]);
 
   const handleConnect = async () => {
     if (isInstalled) {
       // Try window.bitcoin first (Paytaca extension)
       try {
         await connect();
+        // Force re-render after connection
+        setTimeout(() => {
+          setForceRender(prev => prev + 1);
+        }, 100);
       } catch {
         // If failed, show wallet options
         setShowWalletOptions(true);
@@ -160,6 +176,11 @@ export function Navbar() {
         <WalletConnectModal 
           isOpen={showWalletConnect} 
           onClose={() => setShowWalletConnect(false)}
+          onConnect={(address) => {
+            console.log('[Navbar] WalletConnect connected:', address);
+            connectWalletConnect(address);
+            setShowWalletConnect(false);
+          }}
         />
       </>
     );
