@@ -1,21 +1,10 @@
 /**
- * IiteBCH - Wallet Provider
- *
- * React Context untuk wallet BCH
- * 
- * Primary: Paytaca Extension (Chrome Web Store)
- * Fallback: Cashonize Web Wallet (https://cashonize.com/)
- * 
- * Keduanya menggunakan window.bitcoin API standard
+ * IiteBCH - Wallet Provider (Fixed with localStorage persistence)
  */
 
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-
-// =============================================================================
-// Types
-// =============================================================================
 
 export interface BchWallet {
   cashAddress: string;
@@ -38,7 +27,6 @@ export interface WalletContextType {
   isInstalled: boolean;
 }
 
-// Window.bitcoin API interface
 interface WindowBitcoin {
   requestAccounts: () => Promise<string[]>;
   getPublicKey: () => Promise<string>;
@@ -52,85 +40,66 @@ declare global {
   }
 }
 
-// =============================================================================
-// Context
-// =============================================================================
-
 const WalletContext = createContext<WalletContextType | null>(null);
+const STORAGE_KEY = 'ignitebch_wallet';
 
 export function useWallet() {
   const context = useContext(WalletContext);
-  if (!context) {
-    throw new Error('useWallet must be used within a WalletProvider');
-  }
+  if (!context) throw new Error('useWallet must be used within WalletProvider');
   return context;
 }
 
-// =============================================================================
-// Provider
-// =============================================================================
-
-interface WalletProviderProps {
-  children: ReactNode;
-}
-
-export function WalletProvider({ children }: WalletProviderProps) {
+export function WalletProvider({ children }: { children: ReactNode }) {
   const [wallet, setWallet] = useState<BchWallet | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isRestored, setIsRestored] = useState(false);
 
-  // Check if window.bitcoin is available
+  // Check if wallet extension installed
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setIsInstalled(!!window.bitcoin);
     }
   }, []);
 
-  // Try to restore connection on mount
+  // Restore wallet from localStorage on mount
   useEffect(() => {
-    const restoreConnection = async () => {
-      if (typeof window === 'undefined' || !window.bitcoin) return;
-
+    if (typeof window === 'undefined') return;
+    
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
       try {
-        // Check if wallet is still authorized by requesting accounts
-        // This won't show popup if already connected
-        const accounts = await window.bitcoin.requestAccounts();
-        if (accounts && accounts.length > 0) {
-          const cashAddress = accounts[0];
-          // Derive token address from cash address
-          const tokenAddress = cashAddress;
-
-          // Try to get public key
-          let publicKey: string | undefined;
-          try {
-            publicKey = await window.bitcoin.getPublicKey();
-          } catch {
-            // Public key might not be available
-          }
-
-          setWallet({
-            cashAddress,
-            tokenAddress,
-            publicKey,
-          });
+        const parsed = JSON.parse(saved);
+        if (parsed.cashAddress) {
+          setWallet(parsed);
         }
-      } catch {
-        // Not connected or user rejected
+      } catch (e) {
+        localStorage.removeItem(STORAGE_KEY);
       }
-    };
-
-    restoreConnection();
+    }
+    setIsRestored(true);
   }, []);
+
+  // Save wallet to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    if (wallet) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(wallet));
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }, [wallet]);
 
   const connect = useCallback(async () => {
     if (typeof window === 'undefined') {
-      setError('Cannot connect: window is undefined');
+      setError('Cannot connect');
       return;
     }
 
     if (!window.bitcoin) {
-      setError('No BCH wallet detected. Please install Paytaca extension.');
+      setError('Install Paytaca extension');
       return;
     }
 
@@ -139,116 +108,78 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
     try {
       const accounts = await window.bitcoin.requestAccounts();
-
-      if (!accounts || accounts.length === 0) {
-        throw new Error('No accounts returned from wallet');
-      }
+      if (!accounts?.length) throw new Error('No accounts');
 
       const cashAddress = accounts[0];
-      const tokenAddress = cashAddress;
-
-      // Try to get public key
       let publicKey: string | undefined;
       try {
         publicKey = await window.bitcoin.getPublicKey();
-      } catch {
-        // Some wallets don't support getPublicKey
-      }
+      } catch {}
 
       const newWallet: BchWallet = {
         cashAddress,
-        tokenAddress,
+        tokenAddress: cashAddress,
         publicKey,
       };
       
-      console.log('[WalletProvider] Setting wallet state:', newWallet);
-      
-      // Use functional update to ensure state is set
-      setWallet(() => newWallet);
-      
-      console.log('[WalletProvider] Wallet state set, isConnected should be:', true);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to connect wallet';
-      setError(message);
+      setWallet(newWallet);
+    } catch (err: any) {
+      setError(err.message || 'Connection failed');
       throw err;
     } finally {
       setIsConnecting(false);
     }
   }, []);
 
-  const openCashonizeWeb = useCallback(() => {
-    // Open Cashonize web wallet in a new tab
-    window.open('https://cashonize.com/', '_blank', 'noopener,noreferrer');
-  }, []);
-
-  const openPaytacaExtension = useCallback(() => {
-    // Open Paytaca Chrome Web Store page
-    window.open('https://chromewebstore.google.com/detail/paytaca/paytaca', '_blank', 'noopener,noreferrer');
-  }, []);
-
-  // Connect via WalletConnect (called from WalletConnectModal)
   const connectWalletConnect = useCallback((address: string) => {
-    console.log('[WalletProvider] WalletConnect connected:', address);
-    const newWallet: BchWallet = {
+    setWallet({
       cashAddress: address,
       tokenAddress: address,
       publicKey: undefined,
-    };
-    setWallet(newWallet);
+    });
   }, []);
 
   const disconnect = useCallback(() => {
-    // window.bitcoin doesn't have a disconnect method
-    // Just clear our local state
     setWallet(null);
     setError(null);
+    localStorage.removeItem(STORAGE_KEY);
   }, []);
 
   const signTransaction = useCallback(async (txHex: string): Promise<string> => {
-    if (!window.bitcoin) {
-      throw new Error('Wallet not available');
-    }
+    if (!window.bitcoin) throw new Error('Wallet not available');
     return window.bitcoin.signTransaction(txHex);
   }, []);
 
   const getPublicKey = useCallback(async (): Promise<string> => {
-    if (!window.bitcoin) {
-      throw new Error('Wallet not available');
-    }
+    if (!window.bitcoin) throw new Error('Wallet not available');
     return window.bitcoin.getPublicKey();
   }, []);
 
-  // Check for wallet installation on window focus
-  useEffect(() => {
-    const handleFocus = () => {
-      if (typeof window !== 'undefined') {
-        setIsInstalled(!!window.bitcoin);
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+  const openCashonizeWeb = useCallback(() => {
+    window.open('https://cashonize.com/', '_blank');
   }, []);
 
-  // Memoize value to prevent unnecessary re-renders
-  const value = React.useMemo<WalletContextType>(() => {
-    const isConn = !!wallet;
-    console.log('[WalletProvider] Creating context value:', { isConn, walletAddr: wallet?.cashAddress });
-    return {
-      wallet,
-      isConnected: isConn,
-      isConnecting,
-      error,
-      connect,
-      connectWalletConnect,
-      openCashonizeWeb,
-      openPaytacaExtension,
-      disconnect,
-      signTransaction,
-      getPublicKey,
-      isInstalled,
-    };
-  }, [wallet, isConnecting, error, connect, connectWalletConnect, openCashonizeWeb, openPaytacaExtension, disconnect, signTransaction, getPublicKey, isInstalled]);
+  const openPaytacaExtension = useCallback(() => {
+    window.open('https://chromewebstore.google.com/detail/paytaca', '_blank');
+  }, []);
+
+  const value = React.useMemo(() => ({
+    wallet,
+    isConnected: !!wallet,
+    isConnecting,
+    error,
+    connect,
+    connectWalletConnect,
+    openCashonizeWeb,
+    openPaytacaExtension,
+    disconnect,
+    signTransaction,
+    getPublicKey,
+    isInstalled,
+  }), [wallet, isConnecting, error, connect, connectWalletConnect, openCashonizeWeb, openPaytacaExtension, disconnect, signTransaction, getPublicKey, isInstalled]);
+
+  // Don't render until restored from localStorage
+  if (!isRestored) return null;
 
   return (
     <WalletContext.Provider value={value}>
@@ -257,19 +188,11 @@ export function WalletProvider({ children }: WalletProviderProps) {
   );
 }
 
-// =============================================================================
-// Utility Hooks
-// =============================================================================
-
 export function useIsWalletInstalled() {
   const [isInstalled, setIsInstalled] = useState(false);
-
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsInstalled(!!window.bitcoin);
-    }
+    if (typeof window !== 'undefined') setIsInstalled(!!window.bitcoin);
   }, []);
-
   return isInstalled;
 }
 

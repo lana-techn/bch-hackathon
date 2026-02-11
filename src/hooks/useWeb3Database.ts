@@ -1,13 +1,7 @@
-/**
- * IgniteBCH - Web3 Database React Hooks
- * 
- * Easy-to-use hooks for interacting with Gun.js database
- */
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import Web3Database, { TokenMetadata, TokenComment, UserProfile, UserLike } from '@/lib/web3';
+import Web3Database, { TokenMetadata, TokenComment, UserProfile } from '@/lib/web3';
 
 // Hook for token metadata
 export function useTokenMetadata(tokenId: string) {
@@ -23,7 +17,6 @@ export function useTokenMetadata(tokenId: string) {
 
     setLoading(true);
     
-    // Initial fetch
     Web3Database.getTokenMetadata(tokenId)
       .then((data) => {
         setMetadata(data);
@@ -33,16 +26,12 @@ export function useTokenMetadata(tokenId: string) {
         setError(err.message);
         setLoading(false);
       });
-
-    // Subscribe to real-time updates
-    Web3Database.subscribeToTokenMetadata(tokenId, (updatedData) => {
-      setMetadata(updatedData);
-    });
   }, [tokenId]);
 
   const saveMetadata = useCallback(async (data: TokenMetadata) => {
     try {
       await Web3Database.saveTokenMetadata(data);
+      setMetadata(data);
       return true;
     } catch (err: any) {
       setError(err.message);
@@ -67,7 +56,7 @@ export function useTokenComments(tokenId: string) {
 
     setLoading(true);
 
-    // Initial fetch
+    // Initial load
     Web3Database.getCommentsForToken(tokenId)
       .then((data) => {
         setComments(data);
@@ -78,17 +67,16 @@ export function useTokenComments(tokenId: string) {
         setLoading(false);
       });
 
-    // Subscribe to real-time updates
-    Web3Database.subscribeToComments(tokenId, (newComment) => {
+    // Subscribe to updates
+    const unsubscribe = Web3Database.subscribeToComments(tokenId, (newComment) => {
       setComments((prev) => {
-        // Check if comment already exists
         const exists = prev.find((c) => c.id === newComment.id);
-        if (exists) {
-          return prev.map((c) => (c.id === newComment.id ? newComment : c));
-        }
+        if (exists) return prev;
         return [newComment, ...prev];
       });
     });
+
+    return unsubscribe;
   }, [tokenId]);
 
   const addComment = useCallback(async (content: string, authorAddress: string) => {
@@ -103,6 +91,7 @@ export function useTokenComments(tokenId: string) {
       };
       
       await Web3Database.addComment(comment);
+      setComments((prev) => [comment, ...prev]);
       return true;
     } catch (err: any) {
       setError(err.message);
@@ -160,7 +149,7 @@ export function useUserProfile(address: string) {
   return { profile, loading, error, saveProfile };
 }
 
-// Hook for token likes
+// Hook for token likes (FIXED)
 export function useTokenLikes(tokenId: string, userAddress?: string) {
   const [likes, setLikes] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
@@ -173,26 +162,31 @@ export function useTokenLikes(tokenId: string, userAddress?: string) {
       return;
     }
 
-    setLoading(true);
-
-    // Fetch like count
-    Web3Database.getTokenLikes(tokenId)
-      .then((count) => {
+    const loadLikes = async () => {
+      try {
+        setLoading(true);
+        const count = await Web3Database.getTokenLikes(tokenId);
         setLikes(count);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-
-    // Check if user has liked
-    if (userAddress) {
-      Web3Database.hasLiked(tokenId, userAddress)
-        .then((liked) => {
+        
+        if (userAddress) {
+          const liked = await Web3Database.hasLiked(tokenId, userAddress);
           setHasLiked(liked);
-        });
-    }
+        }
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadLikes();
+
+    // Subscribe to updates
+    const unsubscribe = Web3Database.subscribeToTokenLikes(tokenId, (count) => {
+      setLikes(count);
+    });
+
+    return unsubscribe;
   }, [tokenId, userAddress]);
 
   const toggleLike = useCallback(async () => {

@@ -1,15 +1,10 @@
 /**
- * IgniteBCH - Web3 Database Service
+ * Simplified Web3 Database using localStorage
  * 
- * Hybrid architecture:
- * - Gun.js: Real-time P2P data (comments, likes, user profiles)
- * - IPFS: File storage (token images, metadata)
- * - Blockchain: Source of truth (tokens, trades)
+ * Gun.js relay down, using localStorage for now
+ * Data persists per browser
  */
 
-import Gun from 'gun';
-
-// Types for our data
 export interface UserProfile {
   address: string;
   displayName?: string;
@@ -28,15 +23,14 @@ export interface TokenComment {
   content: string;
   timestamp: string;
   likes: number;
-  replies?: TokenComment[];
 }
 
 export interface TokenMetadata {
-  id: string; // token category
+  id: string;
   name: string;
   ticker: string;
   description: string;
-  image?: string; // IPFS hash
+  image?: string;
   website?: string;
   twitter?: string;
   telegram?: string;
@@ -50,184 +44,157 @@ export interface UserLike {
   timestamp: string;
 }
 
-// Initialize Gun
-const gun = Gun({
-  peers: [
-    'https://gun-manhattan.herokuapp.com/gun', // Public relay
-    'https://gun-us.herokuapp.com/gun',
-  ],
-  localStorage: false, // Don't use localStorage in browser
-  radisk: true, // Use IndexedDB
-});
+// Storage keys
+const COMMENTS_KEY = 'ignitebch_comments';
+const LIKES_KEY = 'ignitebch_likes';
+const PROFILES_KEY = 'ignitebch_profiles';
+const TOKENS_KEY = 'ignitebch_tokens';
 
-// Namespaced nodes
-const tokensNode = gun.get('ignitebch_tokens');
-const usersNode = gun.get('ignitebch_users');
-const commentsNode = gun.get('ignitebch_comments');
-const likesNode = gun.get('ignitebch_likes');
+// Helper functions
+const getStorage = (key: string) => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
+
+const setStorage = (key: string, data: any) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(key, JSON.stringify(data));
+};
 
 export class Web3Database {
   // ========== TOKEN METADATA ==========
   
   static async saveTokenMetadata(token: TokenMetadata): Promise<void> {
-    return new Promise((resolve, reject) => {
-      tokensNode.get(token.id).put(token, (ack: any) => {
-        if (ack?.err) reject(new Error(ack.err));
-        else resolve();
-      });
-    });
+    const tokens = getStorage(TOKENS_KEY);
+    const index = tokens.findIndex((t: TokenMetadata) => t.id === token.id);
+    if (index >= 0) {
+      tokens[index] = token;
+    } else {
+      tokens.push(token);
+    }
+    setStorage(TOKENS_KEY, tokens);
   }
 
   static async getTokenMetadata(tokenId: string): Promise<TokenMetadata | null> {
-    return new Promise((resolve) => {
-      tokensNode.get(tokenId).once((data: unknown) => {
-        resolve(data as TokenMetadata | null);
-      });
-    });
+    const tokens = getStorage(TOKENS_KEY);
+    return tokens.find((t: TokenMetadata) => t.id === tokenId) || null;
   }
 
   static async getAllTokenMetadata(): Promise<TokenMetadata[]> {
-    return new Promise((resolve) => {
-      const tokens: TokenMetadata[] = [];
-      tokensNode.map().once((data: unknown, id: string) => {
-        if (data && id) {
-          tokens.push(data as TokenMetadata);
-        }
-      });
-      // Return after a short delay to collect data
-      setTimeout(() => resolve(tokens), 1000);
-    });
+    return getStorage(TOKENS_KEY);
   }
 
   // ========== USER PROFILES ==========
   
   static async saveUserProfile(profile: UserProfile): Promise<void> {
-    return new Promise((resolve, reject) => {
-      usersNode.get(profile.address).put(profile, (ack: any) => {
-        if (ack?.err) reject(new Error(ack.err));
-        else resolve();
-      });
-    });
+    const profiles = getStorage(PROFILES_KEY);
+    const index = profiles.findIndex((p: UserProfile) => p.address === profile.address);
+    if (index >= 0) {
+      profiles[index] = profile;
+    } else {
+      profiles.push(profile);
+    }
+    setStorage(PROFILES_KEY, profiles);
   }
 
   static async getUserProfile(address: string): Promise<UserProfile | null> {
-    return new Promise((resolve) => {
-      usersNode.get(address).once((data: unknown) => {
-        resolve(data as UserProfile | null);
-      });
-    });
+    const profiles = getStorage(PROFILES_KEY);
+    return profiles.find((p: UserProfile) => p.address === address) || null;
   }
 
   // ========== COMMENTS ==========
   
   static async addComment(comment: TokenComment): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const commentRef = commentsNode.get(comment.id);
-      commentRef.put(comment, (ack: any) => {
-        if (ack?.err) reject(new Error(ack.err));
-        else {
-          // Also add to token's comments list
-          tokensNode.get(comment.tokenId).get('comments').set(commentRef);
-          resolve();
-        }
-      });
-    });
+    const comments = getStorage(COMMENTS_KEY);
+    comments.push(comment);
+    setStorage(COMMENTS_KEY, comments);
   }
 
   static async getCommentsForToken(tokenId: string): Promise<TokenComment[]> {
-    return new Promise((resolve) => {
-      const comments: TokenComment[] = [];
-      commentsNode.map().once((data: unknown) => {
-        const comment = data as TokenComment | null;
-        if (comment && comment.tokenId === tokenId) {
-          comments.push(comment);
-        }
-      });
-      setTimeout(() => {
-        // Sort by timestamp
-        comments.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        resolve(comments);
-      }, 1000);
-    });
+    const comments = getStorage(COMMENTS_KEY);
+    return comments
+      .filter((c: TokenComment) => c.tokenId === tokenId)
+      .sort((a: TokenComment, b: TokenComment) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
   }
 
-  // ========== LIKES ==========
+  // ========== LIKES (FIXED) ==========
   
   static async addLike(tokenId: string, userAddress: string): Promise<void> {
-    const likeId = `${tokenId}_${userAddress}`;
-    const like: UserLike = {
-      tokenId,
-      userAddress,
-      timestamp: new Date().toISOString(),
-    };
-    
-    return new Promise((resolve, reject) => {
-      likesNode.get(likeId).put(like, (ack: any) => {
-        if (ack?.err) reject(new Error(ack.err));
-        else {
-          // Increment token like count
-          tokensNode.get(tokenId).get('likes').once((current: unknown) => {
-            const count = (current as number || 0) + 1;
-            tokensNode.get(tokenId).get('likes').put(count);
-          });
-          resolve();
-        }
+    const likes = getStorage(LIKES_KEY);
+    const exists = likes.find((l: UserLike) => 
+      l.tokenId === tokenId && l.userAddress === userAddress
+    );
+    if (!exists) {
+      likes.push({
+        tokenId,
+        userAddress,
+        timestamp: new Date().toISOString(),
       });
-    });
+      setStorage(LIKES_KEY, likes);
+    }
   }
 
   static async removeLike(tokenId: string, userAddress: string): Promise<void> {
-    const likeId = `${tokenId}_${userAddress}`;
-    
-    return new Promise((resolve, reject) => {
-      likesNode.get(likeId).put(null, (ack: any) => {
-        if (ack?.err) reject(new Error(ack.err));
-        else {
-          // Decrement token like count
-          tokensNode.get(tokenId).get('likes').once((current: unknown) => {
-            const count = Math.max((current as number || 1) - 1, 0);
-            tokensNode.get(tokenId).get('likes').put(count);
-          });
-          resolve();
-        }
-      });
-    });
+    const likes = getStorage(LIKES_KEY);
+    const filtered = likes.filter((l: UserLike) => 
+      !(l.tokenId === tokenId && l.userAddress === userAddress)
+    );
+    setStorage(LIKES_KEY, filtered);
   }
 
   static async hasLiked(tokenId: string, userAddress: string): Promise<boolean> {
-    const likeId = `${tokenId}_${userAddress}`;
-    return new Promise((resolve) => {
-      likesNode.get(likeId).once((data: unknown) => {
-        resolve(!!data);
-      });
-    });
+    const likes = getStorage(LIKES_KEY);
+    return likes.some((l: UserLike) => 
+      l.tokenId === tokenId && l.userAddress === userAddress
+    );
   }
 
   static async getTokenLikes(tokenId: string): Promise<number> {
-    return new Promise((resolve) => {
-      tokensNode.get(tokenId).get('likes').once((count: unknown) => {
-        resolve(count as number || 0);
-      });
-    });
+    const likes = getStorage(LIKES_KEY);
+    return likes.filter((l: UserLike) => l.tokenId === tokenId).length;
   }
 
-  // ========== REAL-TIME SUBSCRIPTIONS ==========
+  // ========== REAL-TIME (Simulated with interval) ==========
   
-  static subscribeToComments(tokenId: string, callback: (comment: TokenComment) => void): void {
-    commentsNode.map().on((data: unknown) => {
-      const comment = data as TokenComment | null;
-      if (comment && comment.tokenId === tokenId) {
-        callback(comment);
-      }
-    });
+  static subscribeToComments(tokenId: string, callback: (comment: TokenComment) => void): () => void {
+    // Check for new comments every 2 seconds
+    let lastComments = getStorage(COMMENTS_KEY);
+    
+    const interval = setInterval(() => {
+      const comments = getStorage(COMMENTS_KEY);
+      const newComments = comments.filter((c: TokenComment) => 
+        c.tokenId === tokenId && 
+        !lastComments.find((lc: TokenComment) => lc.id === c.id)
+      );
+      
+      newComments.forEach((c: TokenComment) => callback(c));
+      lastComments = comments;
+    }, 2000);
+    
+    return () => clearInterval(interval);
   }
 
-  static subscribeToTokenMetadata(tokenId: string, callback: (token: TokenMetadata) => void): void {
-    tokensNode.get(tokenId).on((data: unknown) => {
-      if (data) {
-        callback(data as TokenMetadata);
+  static subscribeToTokenLikes(tokenId: string, callback: (count: number) => void): () => void {
+    let lastCount = 0;
+    
+    const interval = setInterval(() => {
+      const likes = getStorage(LIKES_KEY);
+      const count = likes.filter((l: UserLike) => l.tokenId === tokenId).length;
+      
+      if (count !== lastCount) {
+        callback(count);
+        lastCount = count;
       }
-    });
+    }, 1000);
+    
+    return () => clearInterval(interval);
   }
 }
 

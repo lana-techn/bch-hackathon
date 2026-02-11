@@ -1,6 +1,9 @@
+'use client';
+
 import Link from "next/link";
 import type { Token } from "@/types";
 import { formatBCH, formatPercent, formatNumber } from "@/lib/format";
+import { useTokenLikes } from "@/hooks/useWeb3Database";
 
 interface TokenCardProps {
   token: Token;
@@ -10,6 +13,9 @@ export function TokenCard({ token }: TokenCardProps) {
   const isPositive = token.change24h >= 0;
   const graduationProgress =
     (token.marketCapBCH / token.graduationTarget) * 100;
+  
+  // Get likes count
+  const { likes, loading } = useTokenLikes(token.id);
 
   return (
     <Link href={`/token/${token.id}`}>
@@ -71,7 +77,7 @@ export function TokenCard({ token }: TokenCardProps) {
         </div>
 
         {/* Graduation Progress Bar */}
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-3">
           <div className="flex items-center justify-between text-xs mb-1">
             <span className="font-[family-name:var(--font-heading)] uppercase text-text-dim">
               Graduation
@@ -85,6 +91,27 @@ export function TokenCard({ token }: TokenCardProps) {
               className="h-full progress-bar transition-all duration-500"
               style={{ width: `${Math.min(graduationProgress, 100)}%` }}
             />
+          </div>
+        </div>
+
+        {/* Likes Indicator */}
+        <div className="px-4 pb-4 pt-2 border-t border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 text-panic-red">
+              <svg
+                className="w-4 h-4"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+              <span className="font-[family-name:var(--font-mono)] text-xs font-bold">
+                {loading ? '...' : likes}
+              </span>
+            </div>
+            <span className="font-[family-name:var(--font-mono)] text-[10px] text-text-dim uppercase">
+              Likes
+            </span>
           </div>
         </div>
       </div>
