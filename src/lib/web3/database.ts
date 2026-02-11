@@ -50,14 +50,16 @@ export interface UserLike {
   timestamp: string;
 }
 
-// Initialize Gun
+// Initialize Gun - Local mode (data stored in browser IndexedDB)
+// Note: Heroku relays are down. Using local storage for now.
+// Data persists in user's browser and syncs when relays available.
 const gun = Gun({
-  peers: [
-    'https://gun-manhattan.herokuapp.com/gun', // Public relay
-    'https://gun-us.herokuapp.com/gun',
-  ],
-  localStorage: false, // Don't use localStorage in browser
-  radisk: true, // Use IndexedDB
+  // No peers = local mode (data stays in browser)
+  // When ready to add relays, uncomment:
+  // peers: ['https://your-relay.com/gun'],
+  localStorage: false, // Don't use localStorage
+  radisk: true, // Use IndexedDB for persistence
+  file: 'ignitebch-data', // IndexedDB name
 });
 
 // Namespaced nodes
