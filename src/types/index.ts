@@ -35,6 +35,9 @@ export interface Token {
     telegram?: string;
     discord?: string;
   };
+  // Contract addresses for real tokens
+  contractAddress?: string;
+  contractTokenAddress?: string;
 }
 
 export interface Trade {
