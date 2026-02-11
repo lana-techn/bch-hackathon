@@ -37,6 +37,13 @@ const CommentStream = dynamic(
   }
 );
 
+const Web3CommentStream = dynamic(
+  () => import("@/components/web3").then(mod => ({ default: mod.Web3CommentStream })),
+  { 
+    loading: () => <div className="h-80 bg-card border-3 border-border animate-pulse" />,
+  }
+);
+
 // Loading skeleton for charts
 function ChartSkeleton({ height }: { height: number }) {
   return (
@@ -266,7 +273,7 @@ export default async function TokenPage({ params }: TokenPageProps) {
             <TokenPerformanceStats token={token} />
             
             <Suspense fallback={<div className="h-80 bg-card border-3 border-border animate-pulse" />}>
-              <CommentStream comments={comments} tokenId={token.id} />
+              <Web3CommentStream tokenId={token.id} />
             </Suspense>
           </div>
         </div>
