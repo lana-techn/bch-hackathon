@@ -1,24 +1,29 @@
 'use client';
 
-import { memo } from "react";
+import { memo, useState, useMemo } from "react";
 import Link from "next/link";
 import { mockTokens } from "@/data/mock-tokens";
 import { TokenCard } from "@/components/ui/TokenCard";
 import { KingOfTheHill } from "@/components/ui/KingOfTheHill";
 import { SmoothScroll } from "@/components/providers";
 import { FeaturesSection, HowItWorksSection, StatsSection, CTASection } from "@/components/sections";
-import { FadeInSection, ParallaxSection, StaggerContainer, StaggerItem } from "@/components/animations";
+import { FadeInSection, ParallaxSection, StaggerContainer } from "@/components/animations";
+
+type FilterType = "Trending" | "New" | "Graduating" | "Graduated";
 
 // Memoized components
 const FilterButton = memo(function FilterButton({ 
   filter, 
-  isActive 
+  isActive,
+  onClick,
 }: { 
   filter: string; 
   isActive: boolean;
+  onClick: () => void;
 }) {
   return (
     <button
+      onClick={onClick}
       className={`px-3 py-1 font-[family-name:var(--font-heading)] text-xs uppercase tracking-wider border-2 transition-colors ${
         isActive
           ? "border-neon text-neon bg-neon/10"
@@ -30,11 +35,17 @@ const FilterButton = memo(function FilterButton({
   );
 });
 
-const TokenStats = memo(function TokenStats() {
-  // Limit to 6 tokens for homepage
+const TokenStats = memo(function TokenStats({ 
+  totalTokens,
+  graduatedCount,
+  graduatingCount 
+}: { 
+  totalTokens: number;
+  graduatedCount: number;
+  graduatingCount: number;
+}) {
   const displayTokens = mockTokens.slice(0, 6);
   const totalVolume = displayTokens.reduce((sum, t) => sum + t.volume24hBCH, 0);
-  const graduatedCount = displayTokens.filter((t) => t.isGraduated).length;
 
   return (
     <section className="border-b-3 border-border bg-card">
@@ -43,10 +54,10 @@ const TokenStats = memo(function TokenStats() {
           <div className="flex items-center gap-8">
             <div>
               <p className="font-[family-name:var(--font-heading)] text-xs uppercase text-text-dim">
-                Featured Tokens
+                Total Tokens
               </p>
               <p className="font-[family-name:var(--font-mono)] text-xl font-bold text-neon tabular-nums">
-                6
+                {totalTokens}
               </p>
             </div>
             <div className="w-px h-8 bg-border" />
@@ -67,6 +78,15 @@ const TokenStats = memo(function TokenStats() {
                 {graduatedCount}
               </p>
             </div>
+            <div className="w-px h-8 bg-border hidden lg:block" />
+            <div className="hidden lg:block">
+              <p className="font-[family-name:var(--font-heading)] text-xs uppercase text-text-dim">
+                Graduating
+              </p>
+              <p className="font-[family-name:var(--font-mono)] text-xl font-bold text-neon tabular-nums">
+                {graduatingCount}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-neon animate-pulse" />
@@ -81,6 +101,14 @@ const TokenStats = memo(function TokenStats() {
 });
 
 const TokenGrid = memo(function TokenGrid({ tokens }: { tokens: typeof mockTokens }) {
+  if (tokens.length === 0) {
+    return (
+      <div className="text-center py-12 border-2 border-dashed border-border">
+        <p className="text-text-dim font-mono">No tokens found</p>
+      </div>
+    );
+  }
+
   return (
     <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {tokens.map((token) => (
@@ -91,21 +119,67 @@ const TokenGrid = memo(function TokenGrid({ tokens }: { tokens: typeof mockToken
 });
 
 export default function Home() {
-  // Sort tokens: highest market cap first for King
-  const sortedTokens = [...mockTokens].sort(
-    (a, b) => b.marketCapBCH - a.marketCapBCH
-  );
-  const kingToken = sortedTokens[0];
-  
-  // Only show top 6 tokens on homepage
-  const displayTokens = sortedTokens.slice(1, 7);
+  const [activeFilter, setActiveFilter] = useState<FilterType>("Trending");
+  const filters: FilterType[] = ["Trending", "New", "Graduating", "Graduated"];
 
-  const filters = ["Trending", "New", "Graduating", "Graduated"];
+  // Calculate graduation progress for each token
+  const tokensWithProgress = useMemo(() => {
+    return mockTokens.map(token => ({
+      ...token,
+      graduationProgress: (token.marketCapBCH / token.graduationTarget) * 100
+    }));
+  }, []);
+
+  // Filter and sort tokens based on active filter
+  const filteredTokens = useMemo(() => {
+    switch (activeFilter) {
+      case "Trending":
+        // Sort by 24h volume (highest first) or positive change
+        return [...tokensWithProgress]
+          .sort((a, b) => b.volume24hBCH - a.volume24hBCH)
+          .slice(0, 6);
+      
+      case "New":
+        // Sort by creation date (newest first)
+        return [...tokensWithProgress]
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 6);
+      
+      case "Graduating":
+        // Tokens with 50-99% graduation progress and not graduated
+        return tokensWithProgress
+          .filter(t => t.graduationProgress >= 50 && t.graduationProgress < 100 && !t.isGraduated)
+          .sort((a, b) => b.graduationProgress - a.graduationProgress)
+          .slice(0, 6);
+      
+      case "Graduated":
+        // Only graduated tokens
+        return tokensWithProgress
+          .filter(t => t.isGraduated)
+          .sort((a, b) => b.marketCapBCH - a.marketCapBCH)
+          .slice(0, 6);
+      
+      default:
+        return tokensWithProgress.slice(0, 6);
+    }
+  }, [activeFilter, tokensWithProgress]);
+
+  // King of the Hill - highest market cap
+  const kingToken = useMemo(() => {
+    return [...mockTokens].sort((a, b) => b.marketCapBCH - a.marketCapBCH)[0];
+  }, []);
+
+  // Stats
+  const graduatedCount = mockTokens.filter(t => t.isGraduated).length;
+  const graduatingCount = mockTokens.filter(t => {
+    const progress = (t.marketCapBCH / t.graduationTarget) * 100;
+    return progress >= 50 && progress < 100 && !t.isGraduated;
+  }).length;
 
   return (
     <SmoothScroll>
       <div className="min-h-screen bg-void">
-        {/* Hero Section with Parallax */}
+        {/* Hero Section */}
         <ParallaxSection speed={0.3} className="relative">
           <section className="relative border-b-3 border-border overflow-hidden min-h-[80vh] flex items-center">
             <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-20 w-full">
@@ -138,7 +212,6 @@ export default function Home() {
               </FadeInSection>
             </div>
 
-            {/* Decorative grid */}
             <div 
               className="absolute top-0 right-0 w-1/3 h-full opacity-5 pointer-events-none"
               style={{
@@ -150,12 +223,15 @@ export default function Home() {
         </ParallaxSection>
 
         {/* Stats Bar */}
-        <TokenStats />
+        <TokenStats 
+          totalTokens={mockTokens.length}
+          graduatedCount={graduatedCount}
+          graduatingCount={graduatingCount}
+        />
 
         {/* Featured Tokens Section */}
         <section className="max-w-7xl mx-auto px-4 md:px-8 py-12" id="tokens">
           <FadeInSection>
-            {/* King of the Hill */}
             <section className="mb-8">
               <KingOfTheHill token={kingToken} />
             </section>
@@ -166,18 +242,19 @@ export default function Home() {
             <section className="mb-6 flex items-center justify-between flex-wrap gap-4">
               <div>
                 <h2 className="font-[family-name:var(--font-heading)] text-lg font-bold uppercase text-text">
-                  Trending Tokens
+                  {activeFilter} Tokens
                 </h2>
                 <p className="text-text-dim text-xs font-mono mt-1">
-                  Showing 6 of {mockTokens.length} tokens
+                  Showing {filteredTokens.length} tokens
                 </p>
               </div>
               <div className="flex gap-2">
-                {filters.map((filter, index) => (
+                {filters.map((filter) => (
                   <FilterButton 
                     key={filter} 
                     filter={filter} 
-                    isActive={index === 0}
+                    isActive={activeFilter === filter}
+                    onClick={() => setActiveFilter(filter)}
                   />
                 ))}
               </div>
@@ -186,7 +263,7 @@ export default function Home() {
 
           {/* Token Grid */}
           <StaggerContainer staggerDelay={0.1}>
-            <TokenGrid tokens={displayTokens} />
+            <TokenGrid tokens={filteredTokens} />
           </StaggerContainer>
 
           {/* View All Link */}
@@ -205,16 +282,10 @@ export default function Home() {
           </FadeInSection>
         </section>
 
-        {/* Features Section */}
+        {/* Info Sections */}
         <FeaturesSection />
-
-        {/* How It Works Section */}
         <HowItWorksSection />
-
-        {/* Stats Section */}
         <StatsSection />
-
-        {/* CTA Section */}
         <CTASection />
       </div>
     </SmoothScroll>
