@@ -29,6 +29,7 @@ export interface WalletContextType {
   isConnecting: boolean;
   error: string | null;
   connect: () => Promise<void>;
+  connectWalletConnect: (address: string) => void;
   openCashonizeWeb: () => void;
   openPaytacaExtension: () => void;
   disconnect: () => void;
@@ -154,11 +155,18 @@ export function WalletProvider({ children }: WalletProviderProps) {
         // Some wallets don't support getPublicKey
       }
 
-      setWallet({
+      const newWallet: BchWallet = {
         cashAddress,
         tokenAddress,
         publicKey,
-      });
+      };
+      
+      console.log('[WalletProvider] Setting wallet state:', newWallet);
+      
+      // Use functional update to ensure state is set
+      setWallet(() => newWallet);
+      
+      console.log('[WalletProvider] Wallet state set, isConnected should be:', true);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to connect wallet';
       setError(message);
@@ -176,6 +184,17 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const openPaytacaExtension = useCallback(() => {
     // Open Paytaca Chrome Web Store page
     window.open('https://chromewebstore.google.com/detail/paytaca/paytaca', '_blank', 'noopener,noreferrer');
+  }, []);
+
+  // Connect via WalletConnect (called from WalletConnectModal)
+  const connectWalletConnect = useCallback((address: string) => {
+    console.log('[WalletProvider] WalletConnect connected:', address);
+    const newWallet: BchWallet = {
+      cashAddress: address,
+      tokenAddress: address,
+      publicKey: undefined,
+    };
+    setWallet(newWallet);
   }, []);
 
   const disconnect = useCallback(() => {
@@ -211,19 +230,25 @@ export function WalletProvider({ children }: WalletProviderProps) {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  const value: WalletContextType = {
-    wallet,
-    isConnected: !!wallet,
-    isConnecting,
-    error,
-    connect,
-    openCashonizeWeb,
-    openPaytacaExtension,
-    disconnect,
-    signTransaction,
-    getPublicKey,
-    isInstalled,
-  };
+  // Memoize value to prevent unnecessary re-renders
+  const value = React.useMemo<WalletContextType>(() => {
+    const isConn = !!wallet;
+    console.log('[WalletProvider] Creating context value:', { isConn, walletAddr: wallet?.cashAddress });
+    return {
+      wallet,
+      isConnected: isConn,
+      isConnecting,
+      error,
+      connect,
+      connectWalletConnect,
+      openCashonizeWeb,
+      openPaytacaExtension,
+      disconnect,
+      signTransaction,
+      getPublicKey,
+      isInstalled,
+    };
+  }, [wallet, isConnecting, error, connect, connectWalletConnect, openCashonizeWeb, openPaytacaExtension, disconnect, signTransaction, getPublicKey, isInstalled]);
 
   return (
     <WalletContext.Provider value={value}>
