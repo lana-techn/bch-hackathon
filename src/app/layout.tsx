@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://Iitebch.com",
+    url: "https://bch-hacks.vercel.app/",
     siteName: "IiteBCH",
     title: "IiteBCH - Fair Launch Protocol",
     description: "Launch CashTokens instantly with bonding curve pricing",
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
     google: "your-google-verification-code",
   },
   alternates: {
-    canonical: "https://Iitebch.com",
+    canonical: "https://bch-hacks.vercel.app/",
   },
 };
 
