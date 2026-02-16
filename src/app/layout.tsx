@@ -36,13 +36,13 @@ const inter = Inter({
 
 // Metadata
 export const metadata: Metadata = {
-  title: "IgniteBCH - Fair Launch Protocol on Bitcoin Cash",
+  title: "IiteBCH - Fair Launch Protocol on Bitcoin Cash",
   description:
     "Launch CashTokens instantly with bonding curve pricing. No presale, no team allocation, 100% safe liquidity. Fair launch on Bitcoin Cash.",
   keywords: ["Bitcoin Cash", "CashTokens", "bonding curve", "fair launch", "DEX", "DeFi"],
-  authors: [{ name: "IgniteBCH" }],
-  creator: "IgniteBCH",
-  publisher: "IgniteBCH",
+  authors: [{ name: "IiteBCH" }],
+  creator: "IiteBCH",
+  publisher: "IiteBCH",
   robots: {
     index: true,
     follow: true,
@@ -57,22 +57,22 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://ignitebch.com",
-    siteName: "IgniteBCH",
-    title: "IgniteBCH - Fair Launch Protocol",
+    url: "https://bch-hacks.vercel.app/",
+    siteName: "IiteBCH",
+    title: "IiteBCH - Fair Launch Protocol",
     description: "Launch CashTokens instantly with bonding curve pricing",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "IgniteBCH",
+        alt: "IiteBCH",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "IgniteBCH - Fair Launch Protocol",
+    title: "IiteBCH - Fair Launch Protocol",
     description: "Launch CashTokens instantly with bonding curve pricing",
     images: ["/og-image.png"],
   },
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
     google: "your-google-verification-code",
   },
   alternates: {
-    canonical: "https://ignitebch.com",
+    canonical: "https://bch-hacks.vercel.app/",
   },
 };
 
@@ -121,7 +121,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#00FFA3" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="IgniteBCH" />
+        <meta name="apple-mobile-web-app-title" content="IiteBCH" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
       <body

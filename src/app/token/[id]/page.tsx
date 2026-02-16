@@ -266,6 +266,7 @@ export default async function TokenPage({ params }: TokenPageProps) {
             <div className="lg:sticky lg:top-20">
               <TradePanel
                 tokenTicker={token.ticker}
+                tokenId={token.id}
                 currentSupplySold={token.currentSupply}
               />
             </div>

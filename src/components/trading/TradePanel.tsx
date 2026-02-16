@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
   calculateBuyCostSat,
   calculateSellReturnSat,
@@ -11,9 +11,12 @@ import {
   GRADUATION_TARGET_SAT,
 } from "@/lib/contract/constants";
 import { formatNumber } from "@/lib/format";
+import { useWallet } from "@/components/wallet";
+import { buildBuyTransaction, buildSellTransaction, fetchCurveState } from "@/lib/contract/sdk";
 
 interface TradePanelProps {
   tokenTicker: string;
+  tokenId: string;
   currentSupplySold: number;
 }
 
@@ -28,13 +31,98 @@ function bchToSat(bch: number): bigint {
   return BigInt(Math.round(bch * 100_000_000));
 }
 
-export function TradePanel({ tokenTicker, currentSupplySold }: TradePanelProps) {
+export function TradePanel({ tokenTicker, tokenId, currentSupplySold }: TradePanelProps) {
+  const { wallet, isConnected, signTransaction } = useWallet();
   const [mode, setMode] = useState<"buy" | "sell">("buy");
   const [inputAmount, setInputAmount] = useState("");
   const [slippage, setSlippage] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
 
   const supply = BigInt(currentSupplySold);
   const amount = parseFloat(inputAmount) || 0;
+
+  const handleTrade = useCallback(async () => {
+    if (!isConnected || !wallet) {
+      setError("Please connect your wallet first");
+      return;
+    }
+
+    if (!quote || amount <= 0) {
+      setError("Invalid trade amount");
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+    setTxHash(null);
+
+    try {
+      // Fetch current curve state
+      const curveState = await fetchCurveState(tokenId);
+      if (!curveState) {
+        throw new Error("Failed to fetch curve state");
+      }
+
+      let txHex: string;
+
+      if (mode === "buy") {
+        const bchSat = bchToSat(amount);
+        const tokens = quote.outputAmount;
+        
+        const buyResult = await buildBuyTransaction({
+          curveState,
+          tokensToBuy: tokens,
+          bchAmount: bchSat,
+          buyerAddress: wallet.cashAddress,
+        });
+
+        if (!buyResult.txHex) {
+          throw new Error("Failed to build buy transaction");
+        }
+
+        txHex = await signTransaction(buyResult.txHex);
+      } else {
+        const tokensToSell = BigInt(Math.round(amount));
+        
+        const sellResult = await buildSellTransaction({
+          curveState,
+          tokensToSell,
+          sellerAddress: wallet.cashAddress,
+        });
+
+        if (!sellResult.txHex) {
+          throw new Error("Failed to build sell transaction");
+        }
+
+        txHex = await signTransaction(sellResult.txHex);
+      }
+
+      // Broadcast transaction
+      const broadcastResponse = await fetch("https://api.bitcoin.com/v2/broadcast/raw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ txHex }),
+      });
+
+      if (!broadcastResponse.ok) {
+        const broadcastError = await broadcastResponse.json();
+        throw new Error(broadcastError.message || "Failed to broadcast transaction");
+      }
+
+      const broadcastResult = await broadcastResponse.json();
+      setTxHash(broadcastResult.txid || broadcastResult.txId);
+      
+      // Reset form on success
+      setInputAmount("");
+    } catch (err: any) {
+      console.error("Trade error:", err);
+      setError(err.message || "Trade failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [mode, amount, quote, wallet, isConnected, signTransaction, tokenId]);
 
   // All calculations use on-chain integer math (BigInt)
   const quote = useMemo(() => {
@@ -230,14 +318,44 @@ export function TradePanel({ tokenTicker, currentSupplySold }: TradePanelProps) 
 
         {/* Submit Button */}
         <button
+          onClick={handleTrade}
+          disabled={!isConnected || isProcessing || !quote}
           className={`w-full py-4 font-[family-name:var(--font-heading)] text-base font-bold uppercase tracking-wider brutal-btn border-3 transition-colors ${
             mode === "buy"
-              ? "bg-neon text-void border-neon hover:bg-neon/90"
-              : "bg-panic text-void border-panic hover:bg-panic/90"
+              ? "bg-neon text-void border-neon hover:bg-neon/90 disabled:opacity-50"
+              : "bg-panic text-void border-panic hover:bg-panic/90 disabled:opacity-50"
           }`}
         >
-          {mode === "buy" ? `Buy ${tokenTicker}` : `Sell ${tokenTicker}`}
+          {isProcessing
+            ? "Processing..."
+            : !isConnected
+              ? "Connect Wallet"
+              : mode === "buy"
+                ? `Buy ${tokenTicker}`
+                : `Sell ${tokenTicker}`}
         </button>
+
+        {/* Error Message */}
+        {error && (
+          <div className="p-3 bg-panic/10 border-2 border-panic text-panic text-sm font-[family-name:var(--font-mono)]">
+            {error}
+          </div>
+        )}
+
+        {/* Success Message */}
+        {txHash && (
+          <div className="p-3 bg-neon/10 border-2 border-neon text-neon text-sm font-[family-name:var(--font-mono)]">
+            Transaction submitted!{" "}
+            <a
+              href={`https://explorer.bitcoin.com/bch/tx/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:no-underline"
+            >
+              View on explorer
+            </a>
+          </div>
+        )}
 
         {/* Supply Info */}
         <div className="text-center space-y-1">
