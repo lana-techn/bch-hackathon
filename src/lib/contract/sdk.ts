@@ -1,5 +1,5 @@
 /**
- * IiteBCH - Contract SDK (Server-side only)
+ * IgniteBCH - Contract SDK (Server-side only)
  *
  * TypeScript interaction layer for the CashScript smart contracts.
  * Handles contract instantiation, quote generation, state parsing,
@@ -10,6 +10,8 @@
  */
 
 import "server-only";
+import { NetworkError, ContractError, BroadcastError, InsufficientFundsError } from '@/lib/errors';
+import { withRetry, withTimeout } from '@/lib/retry';
 
 import {
   Contract,
@@ -154,7 +156,7 @@ export async function instantiateBondingCurve(
   // Decode fee address to hash160
   const decoded = decodeCashAddress(feeAddress);
   if (typeof decoded === 'string') {
-    throw new Error(`Invalid fee address: ${decoded}`);
+    throw new ContractError(`Invalid fee address: ${decoded}`);
   }
   const feeHash160 = decoded.payload;
 
@@ -189,7 +191,17 @@ export async function instantiateBondingCurve(
 export async function fetchCurveState(
   instance: BondingCurveInstance,
 ): Promise<CurveState | null> {
-  const utxos = await instance.contract.getUtxos();
+  const utxos = await withRetry(
+    () => withTimeout(instance.contract.getUtxos(), 10_000),
+    {
+      maxAttempts: 3,
+      baseDelayMs: 400,
+      onRetry: (err, attempt) =>
+        console.warn(`[SDK] fetchCurveState retry #${attempt}:`, err),
+    },
+  ).catch((err) => {
+    throw new NetworkError('Failed to fetch curve UTXOs', err);
+  });
 
   // Find the UTXO with a mutable NFT (the state carrier)
   const curveUtxo = utxos.find(
@@ -211,7 +223,17 @@ export async function fetchCurveState(
 export async function getCurveUtxo(
   instance: BondingCurveInstance,
 ): Promise<Utxo | null> {
-  const utxos = await instance.contract.getUtxos();
+  const utxos = await withRetry(
+    () => withTimeout(instance.contract.getUtxos(), 10_000),
+    {
+      maxAttempts: 3,
+      baseDelayMs: 400,
+      onRetry: (err, attempt) =>
+        console.warn(`[SDK] getCurveUtxo retry #${attempt}:`, err),
+    },
+  ).catch((err) => {
+    throw new NetworkError('Failed to fetch contract UTXOs', err);
+  });
   return utxos.find(
     u => u.token?.nft?.capability === 'mutable',
   ) ?? null;
@@ -303,7 +325,7 @@ export async function buildBuyTransaction(
   userSigner: SignatureTemplate,
 ): Promise<TransactionBuilder> {
   const curveUtxo = await getCurveUtxo(instance);
-  if (!curveUtxo) throw new Error('Bonding curve UTXO not found');
+  if (!curveUtxo) throw new ContractError('Bonding curve UTXO not found');
 
   // Get current state
   const currentSupply = decodeInt64(curveUtxo.token!.nft!.commitment);
@@ -322,8 +344,10 @@ export async function buildBuyTransaction(
   }
 
   if (userBchTotal < totalUserBch) {
-    throw new Error(
-      `Insufficient BCH: need ${totalUserBch} sats, have ${userBchTotal} sats`
+    throw new InsufficientFundsError(
+      `Insufficient BCH: need ${totalUserBch} sats, have ${userBchTotal} sats`,
+      totalUserBch,
+      userBchTotal,
     );
   }
 
@@ -357,15 +381,17 @@ export async function buildBuyTransaction(
         category: curveUtxo.token!.category,
       },
     })
-    // Output 2: Fee to platform
+    // Output 2: Fee to platform (enforce dust minimum)
     .addOutput({
       to: instance.params.feeAddress,
-      amount: quote.feeSat,
+      amount: quote.feeSat >= 546n ? quote.feeSat : 546n,
     });
 
   // Output 3: User change
-  const txFeeEstimate = 800n;
-  const userChange = userBchTotal - quote.totalSat - txFeeEstimate;
+  // P2SH32 CashScript txs are ~600 bytes; chipnet requires ~2 sat/byte
+  const effectiveFee = quote.feeSat >= 546n ? quote.feeSat : 546n;
+  const txNetworkFee = 3000n; // network miner fee (conservative)
+  const userChange = userBchTotal - quote.costSat - effectiveFee - txNetworkFee;
   if (userChange >= DUST_LIMIT) {
     builder.addOutput({
       to: userChangeAddress,
@@ -400,7 +426,7 @@ export async function buildSellTransaction(
   userSigner: SignatureTemplate,
 ): Promise<TransactionBuilder> {
   const curveUtxo = await getCurveUtxo(instance);
-  if (!curveUtxo) throw new Error('Bonding curve UTXO not found');
+  if (!curveUtxo) throw new ContractError('Bonding curve UTXO not found');
 
   const currentSupply = decodeInt64(curveUtxo.token!.nft!.commitment);
   const quote = getSellQuote(currentSupply, tokensToSell);
@@ -541,4 +567,121 @@ export function addressToHash160(address: string): Uint8Array {
     throw new Error(`Invalid CashAddress: ${decoded}`);
   }
   return decoded.payload;
+}
+
+/**
+ * Convert any BCH cash address to its token-capable variant.
+ * Token outputs must target a P2PKH-with-tokens (CashTokens) address.
+ */
+export function toTokenAddress(address: string, network: NetworkType): string {
+  const hash = addressToHash160(address);
+  return pubkeyHashToAddress(hash, network, true);
+}
+
+/**
+ * Verify if a string is a valid BCH cash address.
+ */
+export function verifyAddress(address: string): boolean {
+  try {
+    const decoded = decodeCashAddress(address);
+    return typeof decoded !== 'string';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Broadcast a signed transaction to the BCH network.
+ */
+export async function broadcastTransaction(
+  signedTxHex: string,
+  network: NetworkType = 'mainnet'
+): Promise<string> {
+  const provider = createProvider(network);
+
+  return withRetry(
+    () => withTimeout(provider.sendRawTransaction(signedTxHex), 15_000),
+    {
+      maxAttempts: 2,
+      baseDelayMs: 1_000,
+      onRetry: (err, attempt) =>
+        console.warn(`[SDK] broadcastTransaction retry #${attempt}:`, err),
+    },
+  ).catch((err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    // Double-spend / mempool-conflict errors are NOT retryable
+    const retryable = !/mempool|conflict|dust|fee/i.test(msg);
+    throw new BroadcastError(`Broadcast failed: ${msg}`, { retryable, cause: err });
+  });
+}
+
+/**
+ * Get transaction confirmation status.
+ */
+export async function getTransactionStatus(
+  txid: string,
+  network: NetworkType = 'mainnet'
+): Promise<{ confirmed: boolean; confirmations: number }> {
+  const provider = createProvider(network);
+
+  try {
+    const tx = await provider.getRawTransaction(txid);
+    if (!tx || tx === '') {
+      return { confirmed: false, confirmations: 0 };
+    }
+
+    return { confirmed: true, confirmations: 1 };
+  } catch {
+    return { confirmed: false, confirmations: 0 };
+  }
+}
+
+/**
+ * Select optimal UTXOs for a transaction.
+ */
+export function selectUtxos(
+  utxos: Utxo[],
+  amountNeeded: bigint,
+  includeTokens: boolean = false
+): { selected: Utxo[]; total: bigint; remaining: Utxo[] } {
+  const filtered = includeTokens
+    ? utxos
+    : utxos.filter(u => !u.token);
+
+  const sorted = [...filtered].sort((a, b) =>
+    Number(a.satoshis) - Number(b.satoshis)
+  );
+
+  const selected: Utxo[] = [];
+  let total = 0n;
+
+  for (const utxo of sorted) {
+    selected.push(utxo);
+    total += BigInt(utxo.satoshis);
+    if (total >= amountNeeded) break;
+  }
+
+  if (total < amountNeeded) {
+    throw new Error('Insufficient UTXOs');
+  }
+
+  const remaining = sorted.filter(u => !selected.includes(u));
+
+  return { selected, total, remaining };
+}
+
+/**
+ * Estimate transaction fee based on size.
+ */
+export function estimateFee(txSizeBytes: number, feePerByte: bigint = 1n): bigint {
+  const minimumFee = 546n;
+  const estimated = BigInt(txSizeBytes) * feePerByte;
+  return estimated > minimumFee ? estimated : minimumFee;
+}
+
+/**
+ * Get network chain for transaction fees.
+ */
+export async function getNetworkFeeRate(network: NetworkType = 'mainnet'): Promise<bigint> {
+  return 1n;
 }
