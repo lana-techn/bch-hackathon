@@ -38,7 +38,7 @@ export const TRADING_FEE_BPS = 100n;    // 1% = 100 basis points
 export const CREATION_FEE_SAT = 500_000n; // 0.005 BCH in satoshis
 
 // === Network ===
-export const DUST_LIMIT = 546n;          // Minimum output value in satoshis
+export const DUST_LIMIT = 800n;           // 800 sat — covers P2PKH (546) and P2SH32 (663) token outputs with headroom
 export const MIN_CONTRACT_BALANCE = 1000n; // Minimum BCH on bonding curve UTXO
 
 // === Derived: Calculate precise cost for any range ===

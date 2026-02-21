@@ -14,11 +14,13 @@ export interface BchWallet {
 
 export interface WalletContextType {
   wallet: BchWallet | null;
+  walletType: 'paytaca' | 'cashonize' | null;
   isConnected: boolean;
   isConnecting: boolean;
   error: string | null;
   connect: () => Promise<void>;
   connectWalletConnect: (address: string) => void;
+  connectCashonize: (address: string) => void;
   openCashonizeWeb: () => void;
   openPaytacaExtension: () => void;
   disconnect: () => void;
@@ -51,6 +53,7 @@ export function useWallet() {
 
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [wallet, setWallet] = useState<BchWallet | null>(null);
+  const [walletType, setWalletType] = useState<'paytaca' | 'cashonize' | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
@@ -66,13 +69,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   // Restore wallet from localStorage on mount
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.cashAddress) {
-          setWallet(parsed);
+          setWallet(parsed.wallet || parsed);
+          setWalletType(parsed.walletType || 'paytaca');
         }
       } catch (e) {
         localStorage.removeItem(STORAGE_KEY);
@@ -84,13 +88,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   // Save wallet to localStorage whenever it changes
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
     if (wallet) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(wallet));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ wallet, walletType }));
     } else {
       localStorage.removeItem(STORAGE_KEY);
     }
-  }, [wallet]);
+  }, [wallet, walletType]);
 
   const connect = useCallback(async () => {
     if (typeof window === 'undefined') {
@@ -114,15 +117,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       let publicKey: string | undefined;
       try {
         publicKey = await window.bitcoin.getPublicKey();
-      } catch {}
+      } catch { }
 
       const newWallet: BchWallet = {
         cashAddress,
         tokenAddress: cashAddress,
         publicKey,
       };
-      
+
       setWallet(newWallet);
+      setWalletType('paytaca');
     } catch (err: any) {
       setError(err.message || 'Connection failed');
       throw err;
@@ -132,15 +136,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const connectWalletConnect = useCallback((address: string) => {
-    setWallet({
-      cashAddress: address,
-      tokenAddress: address,
-      publicKey: undefined,
-    });
+    setWallet({ cashAddress: address, tokenAddress: address, publicKey: undefined });
+    setWalletType('paytaca');
+  }, []);
+
+  const connectCashonize = useCallback((address: string) => {
+    setWallet({ cashAddress: address, tokenAddress: address, publicKey: undefined });
+    setWalletType('cashonize');
   }, []);
 
   const disconnect = useCallback(() => {
     setWallet(null);
+    setWalletType(null);
     setError(null);
     localStorage.removeItem(STORAGE_KEY);
   }, []);
@@ -165,18 +172,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const value = React.useMemo(() => ({
     wallet,
+    walletType,
     isConnected: !!wallet,
     isConnecting,
     error,
     connect,
     connectWalletConnect,
+    connectCashonize,
     openCashonizeWeb,
     openPaytacaExtension,
     disconnect,
     signTransaction,
     getPublicKey,
     isInstalled,
-  }), [wallet, isConnecting, error, connect, connectWalletConnect, openCashonizeWeb, openPaytacaExtension, disconnect, signTransaction, getPublicKey, isInstalled]);
+  }), [wallet, walletType, isConnecting, error, connect, connectWalletConnect, connectCashonize, openCashonizeWeb, openPaytacaExtension, disconnect, signTransaction, getPublicKey, isInstalled]);
 
   // Don't render until restored from localStorage
   if (!isRestored) return null;

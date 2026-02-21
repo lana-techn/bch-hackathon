@@ -22,7 +22,7 @@ const BCH_METHODS = [
 ];
 const BCH_CHAINS = [
   'bch:mainnet',
-  'bch:chipnet', 
+  'bch:chipnet',
 ];
 
 interface WalletConnectState {
@@ -31,6 +31,8 @@ interface WalletConnectState {
   session: any | null;
   isConnecting: boolean;
   error: string | null;
+  /** Machine-readable code for error UI differentiation */
+  errorCode: 'not_configured' | 'timeout' | 'rejected' | 'unknown' | null;
   isConfigured: boolean;
 }
 
@@ -44,9 +46,10 @@ export function useWalletConnect() {
     session: null,
     isConnecting: false,
     error: null,
+    errorCode: null,
     isConfigured,
   });
-  
+
   const clientRef = useRef<SignClient | null>(null);
 
   // Initialize WalletConnect client
@@ -70,7 +73,7 @@ export function useWalletConnect() {
       });
 
       clientRef.current = client;
-      
+
       // Listen for session events
       (client as any).on('session_proposal', (event: any) => {
         console.log('Session proposal:', event);
@@ -102,14 +105,24 @@ export function useWalletConnect() {
   // Connect to wallet
   const connect = useCallback(async () => {
     if (!isConfigured) {
-      setState(prev => ({ 
-        ...prev, 
-        error: 'WalletConnect not configured. Please set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID in .env.local' 
+      setState(prev => ({
+        ...prev,
+        error: 'WalletConnect not configured. Please set NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID in .env.local',
+        errorCode: 'not_configured',
       }));
       throw new Error('WalletConnect not configured');
     }
 
-    setState(prev => ({ ...prev, isConnecting: true, error: null, uri: null }));
+    setState(prev => ({ ...prev, isConnecting: true, error: null, errorCode: null, uri: null }));
+
+    // 30-second connection timeout guard
+    const timeoutId = setTimeout(() => {
+      setState(prev =>
+        prev.isConnecting
+          ? { ...prev, isConnecting: false, error: 'Connection timed out. Is your wallet open?', errorCode: 'timeout' }
+          : prev
+      );
+    }, 30_000);
 
     try {
       const client = await initClient();
@@ -131,15 +144,20 @@ export function useWalletConnect() {
 
       // Wait for approval
       const session = await approval();
-      setState(prev => ({ ...prev, session, isConnecting: false, uri: null }));
-      
+      clearTimeout(timeoutId);
+      setState(prev => ({ ...prev, session, isConnecting: false, uri: null, error: null, errorCode: null }));
+
       return session;
     } catch (err) {
+      clearTimeout(timeoutId);
       console.error('Connection error:', err);
-      setState(prev => ({ 
-        ...prev, 
-        isConnecting: false, 
-        error: err instanceof Error ? err.message : 'Connection failed' 
+      const message = err instanceof Error ? err.message : 'Connection failed';
+      const errorCode = /reject|cancel|denied/i.test(message) ? 'rejected' : 'unknown';
+      setState(prev => ({
+        ...prev,
+        isConnecting: false,
+        error: message,
+        errorCode,
       }));
       throw err;
     }
@@ -184,7 +202,7 @@ export function useWalletConnect() {
   // Get connected address
   const getAddress = useCallback((): string | null => {
     if (!state.session) return null;
-    
+
     const accounts = state.session.namespaces?.bch?.accounts || [];
     if (accounts.length > 0) {
       // Format: "bch:mainnet:address" -> extract address
