@@ -147,6 +147,10 @@ export async function deployTokenCashTokens(
       throw new Error('No BCH UTXOs available. Please fund your wallet.');
     }
 
+    // Find the largest UTXO for pre-genesis
+    nonTokenUtxos.sort((a, b) => Number(b.satoshis) - Number(a.satoshis));
+    const inputUtxo = nonTokenUtxos[0];
+
     // Step 2: Create Pre-Genesis Transaction
     // This creates a UTXO at vout 0 which will become the token category
     onProgress?.({
@@ -154,8 +158,6 @@ export async function deployTokenCashTokens(
       message: 'Step 1/4: Creating Pre-Genesis transaction...',
       progress: 15,
     });
-
-    const inputUtxo = nonTokenUtxos[0];
     const splitAmount = 2000n; // Small amount for vout 0
     const preGenesisFee = 1000n;
     const preGenesisChange = inputUtxo.satoshis - splitAmount - preGenesisFee;
@@ -186,8 +188,8 @@ export async function deployTokenCashTokens(
       txHash: preGenesisResult.txid,
     });
 
-    // Wait for transaction to be mined
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Wait for transaction to be mined and indexed
+    await new Promise(resolve => setTimeout(resolve, 8000)); // Wait longer for indexing
 
     // Step 3: Create Genesis Transaction
     // Spends vout 0 of pre-genesis, creates minting NFT
@@ -204,15 +206,16 @@ export async function deployTokenCashTokens(
     };
 
     const genesisMintDust = 1000n;
-    const genesisFee = 1000n;
 
+    // Genesis transaction with immediate mint
+    // Creates minting NFT AND mints tokens in one transaction
     const genesisBuilder = new TransactionBuilder({ provider })
       .addInput(genesisUtxo, signer.unlockP2PKH())
       .addOutput({
         to: deployerTokenAddress,
         amount: genesisMintDust,
         token: {
-          amount: 0n, // No fungible tokens in genesis, just NFT
+          amount: TOTAL_SUPPLY, // Mint all tokens at genesis
           category: tokenCategory,
           nft: { capability: 'minting', commitment: '' },
         },
@@ -220,11 +223,14 @@ export async function deployTokenCashTokens(
 
     onProgress?.({
       step: 'genesis',
-      message: 'Step 2/4: Signing Genesis transaction...',
+      message: 'Step 2/4: Signing Genesis+Mint transaction...',
       progress: 35,
     });
 
     const genesisResult = await genesisBuilder.send();
+    
+    // The token category is the pre-genesis txid
+    const actualTokenCategory = tokenCategory;
 
     onProgress?.({
       step: 'genesis',
@@ -233,11 +239,11 @@ export async function deployTokenCashTokens(
       txHash: genesisResult.txid,
     });
 
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 8000)); // Wait for indexing
 
     // Step 4: Create BondingCurve contract
     const feeHash160 = addressToHash160(config.feeAddress, config.network);
-    const tokenCategoryBytes = reverseHex(tokenCategory);
+    const tokenCategoryBytes = reverseHex(actualTokenCategory);
     const slopeValue = 1n;
 
     const bondingCurveContract = new Contract(
@@ -246,90 +252,61 @@ export async function deployTokenCashTokens(
       { provider, addressType: 'p2sh32' }
     );
 
-    // Step 5: Create Mint Transaction
-    // Uses the minting NFT to create all tokens
+    // Step 5: Find the token UTXO (already minted at genesis)
     onProgress?.({
-      step: 'mint',
-      message: 'Step 3/4: Minting 1B tokens...',
+      step: 'lock',
+      message: 'Step 3/4: Finding tokens to lock...',
       progress: 50,
     });
 
-    // Get the minting NFT UTXO
-    const tokenUtxos = await provider.getUtxos(deployerTokenAddress);
-    const mintingNftUtxo = tokenUtxos.find(
-      u => u.token?.category === tokenCategory && u.token?.nft?.capability === 'minting'
+    let tokenUtxos = await provider.getUtxos(deployerTokenAddress);
+    console.log(`[DEBUG] Found ${tokenUtxos.length} UTXOs after genesis`);
+    
+    let fullSupplyUtxo = tokenUtxos.find(
+      u => u.token?.category === actualTokenCategory && u.token?.amount === TOTAL_SUPPLY
     );
 
-    if (!mintingNftUtxo) {
-      throw new Error('Minting NFT UTXO not found after genesis');
+    // Retry getting UTXOs if not found
+    if (!fullSupplyUtxo) {
+      for (let i = 0; i < 10; i++) {
+        onProgress?.({
+          step: 'lock',
+          message: `Waiting for confirmation... (${i + 1}/10)`,
+          progress: 52 + i * 2,
+        });
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        tokenUtxos = await provider.getUtxos(deployerTokenAddress);
+        console.log(`[DEBUG] Retry ${i + 1}: Found ${tokenUtxos.length} UTXOs`);
+        fullSupplyUtxo = tokenUtxos.find(
+          u => u.token?.category === actualTokenCategory && u.token?.amount === TOTAL_SUPPLY
+        );
+        if (fullSupplyUtxo) {
+          console.log(`[DEBUG] Found token UTXO with ${fullSupplyUtxo.token?.amount} tokens`);
+          break;
+        }
+      }
     }
 
-    // Get fee UTXO
-    const bchUtxos = await provider.getUtxos(deployerAddress);
-    const feeUtxo = bchUtxos.find(u => !u.token && u.satoshis >= 5000n);
-
-    if (!feeUtxo) {
-      throw new Error('No BCH UTXO for mint transaction fees');
-    }
-
-    const mintDust = 1000n;
-    const mintFee = 1000n;
-    const mintChange = feeUtxo.satoshis - mintDust - mintFee;
-
-    const mintBuilder = new TransactionBuilder({ provider })
-      .addInput(mintingNftUtxo, signer.unlockP2PKH())
-      .addInput(feeUtxo, signer.unlockP2PKH())
-      .addOutput({
-        to: deployerTokenAddress,
-        amount: mintDust,
-        token: {
-          amount: TOTAL_SUPPLY,
-          category: tokenCategory,
-          nft: { capability: 'minting', commitment: '' }, // Keep minting capability
-        },
+    if (!fullSupplyUtxo) {
+      // Log what we found
+      tokenUtxos.forEach((u, idx) => {
+        if (u.token) {
+          console.log(`[DEBUG] UTXO ${idx}: category=${u.token.category}, amount=${u.token.amount}, nft=${u.token.nft?.capability}`);
+        }
       });
-
-    if (mintChange >= 546n) {
-      mintBuilder.addOutput({ to: deployerAddress, amount: mintChange });
+      throw new Error('Token UTXO not found after genesis. Minting may have failed.');
     }
-
-    onProgress?.({
-      step: 'mint',
-      message: 'Step 3/4: Signing Mint transaction...',
-      progress: 60,
-    });
-
-    const mintResult = await mintBuilder.send();
-
-    onProgress?.({
-      step: 'mint',
-      message: 'Step 3/4: Mint confirmed! ✅',
-      progress: 70,
-      txHash: mintResult.txid,
-    });
-
-    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Step 6: Create Lock Transaction
     onProgress?.({
       step: 'lock',
       message: 'Step 4/4: Locking to bonding curve...',
-      progress: 75,
+      progress: 70,
     });
 
-    // Get token UTXO with all supply
-    const finalTokenUtxos = await provider.getUtxos(deployerTokenAddress);
-    const fullSupplyUtxo = finalTokenUtxos.find(
-      u => u.token?.category === tokenCategory && u.token?.amount === TOTAL_SUPPLY
-    );
-
-    if (!fullSupplyUtxo) {
-      throw new Error('Full supply UTXO not found');
-    }
-
-    // Get another fee UTXO
-    const finalBchUtxos = await provider.getUtxos(deployerAddress);
-    const lockFeeUtxo = finalBchUtxos.find(u => !u.token && u.satoshis >= 5000n);
+    // Get fee UTXO for lock transaction
+    const bchUtxos = await provider.getUtxos(deployerAddress);
+    const lockFeeUtxo = bchUtxos.find(u => !u.token && u.satoshis >= 5000n);
 
     if (!lockFeeUtxo) {
       throw new Error('No BCH UTXO for lock transaction fees');
@@ -350,14 +327,14 @@ export async function deployTokenCashTokens(
         amount: curveDust,
         token: {
           amount: CURVE_SUPPLY,
-          category: tokenCategory,
+          category: actualTokenCategory,
           nft: { capability: 'mutable', commitment: initialCommitment },
         },
       })
       .addOutput({
         to: deployerTokenAddress,
         amount: reserveDust,
-        token: { amount: DEX_RESERVE_SUPPLY, category: tokenCategory },
+        token: { amount: DEX_RESERVE_SUPPLY, category: actualTokenCategory },
       });
 
     if (lockChange >= 546n) {
@@ -388,12 +365,11 @@ export async function deployTokenCashTokens(
 
     return {
       success: true,
-      tokenId: tokenCategory,
+      tokenId: actualTokenCategory,
       bondingCurveAddress: bondingCurveContract.address,
       tokenAddress: bondingCurveContract.tokenAddress,
       preGenesisTxid: preGenesisResult.txid,
       genesisTxid: genesisResult.txid,
-      mintTxid: mintResult.txid,
       lockTxid: lockResult.txid,
     };
 
