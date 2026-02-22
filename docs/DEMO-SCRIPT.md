@@ -6,13 +6,50 @@
 
 ---
 
+## ✅ WORKING DEMO (Verified 2026-02-23)
+
+### Deployed Token - OCK (IgniteBCH Token)
+| Field | Value |
+|-------|-------|
+| **Token ID** | `4703183609b7b037881c800e80f46857215af3945e41e7727499d1f74b370056` |
+| **Name** | IgniteBCH Token |
+| **Ticker** | OCK |
+| **Network** | Chipnet (testnet) |
+
+### Confirmed Transactions:
+| Action | TXID | Explorer Link |
+|--------|------|---------------|
+| Genesis | `9e76895c9393bb667a3132c3d835467657752904b1c901a235a366bc1e0357b0` | [View](https://chipnet.bch.ninja/tx/9e76895c9393bb667a3132c3d835467657752904b1c901a235a366bc1e0357b0) |
+| Lock | `177f13a6817a7757faaede3cedad00d58f59ce0d511063e79f573cf682540b42` | [View](https://chipnet.bch.ninja/tx/177f13a6817a7757faaede3cedad00d58f59ce0d511063e79f573cf682540b42) |
+| Buy 10M tokens | `473587e71d40bb6daa14c3b592fc88bcb70cda55a8992ecb73c6d89dde0d28ee` | [View](https://chipnet.bch.ninja/tx/473587e71d40bb6daa14c3b592fc88bcb70cda55a8992ecb73c6d89dde0d28ee) |
+
+### Curve State After Buy:
+```json
+{
+  "currentSupply": "10000000",
+  "reserveBalanceSat": "626000",
+  "tokensRemaining": "790000000",
+  "graduationPercent": 0
+}
+```
+
+### Test Addresses:
+- **Deployer/Buyer:** `bchtest:qqttvxd9g5yw23q5leregzu5v8vkqajtcsc0klq8fa`
+- **Bonding Curve:** `bchtest:pv8dxjdk7c2dp6vv337g9hpeevdkdhpzdtr3gh0y36tmmul8tgunvlp5t3wt6`
+
+---
+
 ## Pre-Demo Setup
 
 ### Requirements:
-- ✅ Paytaca wallet extension installed
-- ✅ Wallet funded with 0.01+ BCH (testnet)
+- ✅ Paytaca wallet extension installed (or use server-side signing)
+- ✅ Wallet funded with 0.01+ BCH (chipnet testnet)
 - ✅ Browser: Chrome/Brave
 - ✅ App running on localhost:3000 or live URL
+- ✅ Environment variables configured:
+  - `DEMO_SIGNING_WIF` - For server-side signing
+  - `DEPLOYER_WIF` - For token deployment
+  - `FEE_ADDRESS` - Platform fee recipient
 
 ### Preparation:
 1. Open app in browser
@@ -118,14 +155,26 @@
 > Let's launch it!"
 
 **During Deployment:**
-> "The smart contract is now deploying in 4 steps:
-> 1. Pre-Genesis - creates the token category
-> 2. Genesis - issues the minting NFT
-> 3. Mint - creates 1 billion tokens
-> 4. Lock - locks 800 million to the bonding curve
+> "The smart contract is now deploying in 3 steps:
+> 1. Pre-Genesis - creates the token category (txid becomes token ID)
+> 2. Genesis + Mint - creates 1 billion tokens in one transaction
+> 3. Lock - locks 800 million to the bonding curve, keeps 200M for DEX liquidity
 >
-> [Wait for completion]
-> And... done! The token is live and trading immediately."
+> [Wait ~30 seconds for completion]
+> And... done! The token is live and trading immediately.
+>
+> The token ID is the pre-genesis transaction hash - this is how CashTokens work on Bitcoin Cash."
+
+### **Actual Deployment Output:**
+```json
+{
+  "success": true,
+  "tokenId": "4703183609b7b037881c800e80f46857215af3945e41e7727499d1f74b370056",
+  "bondingCurveAddress": "bchtest:pv8dxjdk7c2dp6vv337g9hpeevdkdhpzdtr3gh0y36tmmul8tgunvlp5t3wt6",
+  "genesisTxid": "9e76895c9393bb667a3132c3d835467657752904b1c901a235a366bc1e0357b0",
+  "lockTxid": "177f13a6817a7757faaede3cedad00d58f59ce0d511063e79f573cf682540b42"
+}
+```
 
 ---
 
@@ -149,19 +198,38 @@
 > - Trading fee (1%)
 > - Price impact
 >
-> [Enter amount: 0.01 BCH]
-> Let me buy 0.01 BCH worth...
+> [Enter amount: 10M tokens]
+> Let me buy 10 million tokens...
 >
 > [Show calculation]
-> I'll receive about 10 million tokens.
+> Cost: 625,000 satoshis (0.00625 BCH)
+> Fee: 6,250 satoshis (1%)
+> Total: 631,250 satoshis
 >
 > [Click Buy]
-> [Sign transaction in wallet]
+> [Transaction signed and broadcast]
 >
 > [Transaction confirms]
-> Done! I now own 10 million RCAT tokens.
+> Done! I now own 10 million tokens.
 >
 > The price automatically increased because of the bonding curve. Early buyers get the best price - but there's no pre-mine, no insider allocation. Everyone starts equal."
+
+### **Actual Buy Transaction:**
+```json
+{
+  "success": true,
+  "mode": "paytaca",
+  "txid": "473587e71d40bb6daa14c3b592fc88bcb70cda55a8992ecb73c6d89dde0d28ee",
+  "quote": {
+    "tokenAmount": "10000000",
+    "costSat": "625000",
+    "feeSat": "6250",
+    "totalSat": "631250"
+  }
+}
+```
+
+**Explorer:** https://chipnet.bch.ninja/tx/473587e71d40bb6daa14c3b592fc88bcb70cda55a8992ecb73c6d89dde0d28ee
 
 ---
 
