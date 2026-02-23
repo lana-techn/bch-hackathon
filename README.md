@@ -9,47 +9,47 @@
 </p>
 
 <p align="center">
-  <a href="#-fitur-utama">Fitur</a> •
-  <a href="#-cara-kerja">Cara Kerja</a> •
-  <a href="#-instalasi">Instalasi</a> •
-  <a href="#-penggunaan">Penggunaan</a> •
-  <a href="#-dokumentasi">Dokumentasi</a>
+  <a href="#-key-features">Features</a> •
+  <a href="#-how-it-works">How It Works</a> •
+  <a href="#-installation">Installation</a> •
+  <a href="#-usage">Usage</a> •
+  <a href="#-documentation">Documentation</a>
 </p>
 
 ---
 
-## 🎯 Apa itu IgniteBCH?
+## 🎯 What is IgniteBCH?
 
-IgniteBCH adalah platform fair launch untuk token di Bitcoin Cash. Siapa pun bisa membuat token dalam 30 detik dengan satu klik, dan trader bisa buy/sell dengan liquidity terjamin melalui bonding curve.
+IgniteBCH is a fair launch platform for tokens on Bitcoin Cash. Anyone can create a token in 30 seconds with one click, and traders can buy/sell with guaranteed liquidity through bonding curves.
 
-**Bayangkan pump.fun untuk Bitcoin Cash — tapi dengan biaya 100x lebih murah dan fitur sosial built-in.**
+**Think of it as pump.fun for Bitcoin Cash — but with 100x lower fees and built-in social features.**
 
-### Masalah yang Diselesaikan
+### Problems Solved
 
-| Masalah | Solusi IgniteBCH |
-|---------|------------------|
-| 🚫 Launch mahal ($500-5000 di Ethereum) | ✅ $1.50 per launch |
-| 🚫 Developer pre-mine & dump | ✅ Fair launch, no pre-mine |
-| 🚫 90% token adalah rug pull | ✅ Liquidity terkunci di smart contract |
-| 🚫 Tidak ada engagement tools | ✅ SocialFi built-in |
+| Problem | IgniteBCH Solution |
+|---------|-------------------|
+| 🚫 Expensive launch ($500-5000 on Ethereum) | ✅ $1.50 per launch |
+| 🚫 Developers pre-mine & dump | ✅ Fair launch, no pre-mine |
+| 🚫 90% of tokens are rug pulls | ✅ Liquidity locked in smart contract |
+| 🚫 No engagement tools | ✅ SocialFi built-in |
 
 ---
 
-## ✨ Fitur Utama
+## ✨ Key Features
 
 ### 1. 🪙 Token Launch System
-- **One-Click Creation**: Buat CashToken dalam 30 detik
-- **AI-Powered**: Generate logo, nama, dan deskripsi dengan AI
-- **Low Cost**: Hanya 0.005 BCH (~$1.50) per launch
+- **One-Click Creation**: Create a CashToken in 30 seconds
+- **AI-Powered**: Generate logo, name, and description with AI
+- **Low Cost**: Only 0.005 BCH (~$1.50) per launch
 
 ### 2. 📈 Bonding Curve Trading
-- **Guaranteed Liquidity**: Selalu bisa buy/sell
-- **No Slippage**: Harga terprediksi
-- **Transparent**: Formula matematis yang jelas
+- **Guaranteed Liquidity**: Always able to buy/sell
+- **No Slippage**: Predictable pricing
+- **Transparent**: Clear mathematical formula
 
 ### 3. 🎓 Graduation System
-- **Auto-Graduation**: Token sukses otomatis list di DEX
-- **Locked Liquidity**: 200M token untuk DEX pool
+- **Auto-Graduation**: Successful tokens auto-list on DEX
+- **Locked Liquidity**: 200M tokens for DEX pool
 - **Market Cap Target**: 40 BCH (~$12,000)
 
 ### 4. 💬 SocialFi Features
@@ -59,7 +59,7 @@ IgniteBCH adalah platform fair launch untuk token di Bitcoin Cash. Siapa pun bis
 
 ---
 
-## 🔧 Cara Kerja
+## 🔧 How It Works
 
 ### Token Economics
 
@@ -74,12 +74,12 @@ Total Supply: 1,000,000,000 tokens
 ```
 Price = Slope × Supply
 
-Dimana:
+Where:
 - Slope = 1 satoshi per token
-- Price meningkat linear dengan demand
+- Price increases linearly with demand
 ```
 
-**Contoh:**
+**Example:**
 - Token #1: 1 satoshi
 - Token #100: 100 satoshis
 - Token #1,000,000: 1,000,000 satoshis (0.01 BCH)
@@ -87,25 +87,25 @@ Dimana:
 ### Graduation Flow
 
 ```
-Market Cap mencapai 40 BCH
+Market Cap reaches 40 BCH
          │
          ▼
 ┌─────────────────────────────┐
 │ 1. 200M tokens unlock       │
-│ 2. Pair dengan BCH di pool  │
-│ 3. List di DEX              │
-│ 4. Trading dimulai          │
+│ 2. Pair with BCH in pool    │
+│ 3. List on DEX              │
+│ 4. Trading begins           │
 └─────────────────────────────┘
 ```
 
 ---
 
-## 📦 Instalasi
+## 📦 Installation
 
 ### Prerequisites
 
 - Node.js 18+
-- npm atau yarn
+- npm or yarn
 - Git
 
 ### Quick Start
@@ -120,7 +120,7 @@ npm install
 
 # Setup environment
 cp .env.example .env.local
-# Edit .env.local dengan keys Anda
+# Edit .env.local with your keys
 
 # Run development server
 npm run dev
@@ -150,54 +150,54 @@ PINATA_SECRET_KEY=your_pinata_secret
 
 ---
 
-## 🚀 Penggunaan
+## 🚀 Usage
 
-### 1. Membuat Token
+### 1. Creating a Token
 
-1. Buka `/create`
+1. Open `/create`
 2. Connect wallet (Paytaca/Cashonize)
-3. Isi form:
-   - Name: Nama token
+3. Fill the form:
+   - Name: Token name
    - Ticker: Symbol (max 8 chars)
-   - Description: Deskripsi token
-4. (Optional) Gunakan AI untuk generate logo & deskripsi
-5. Klik "Launch Token"
-6. Tunggu ~30 detik untuk 3 transaksi
+   - Description: Token description
+4. (Optional) Use AI to generate logo & description
+5. Click "Launch Token"
+6. Wait ~30 seconds for 3 transactions
 
 ### 2. Trading
 
 **Buy:**
-1. Pilih token dari homepage
-2. Masukkan jumlah BCH
+1. Select token from homepage
+2. Enter BCH amount
 3. Review quote (tokens received, fee, price impact)
-4. Sign & broadcast transaksi
+4. Sign & broadcast transaction
 
 **Sell:**
-1. Masukkan jumlah token
+1. Enter token amount
 2. Review quote (BCH received, fee)
-3. Sign & broadcast transaksi
+3. Sign & broadcast transaction
 
 ### 3. Social Features
 
-- Post comments di halaman token
-- Like tokens untuk menunjukkan support
-- View profiles pengguna lain
+- Post comments on token page
+- Like tokens to show support
+- View other user profiles
 
 ---
 
-## 📚 Dokumentasi
+## 📚 Documentation
 
-| Dokumen | Deskripsi |
-|---------|-----------|
-| [FEATURES.md](docs/features/FEATURES.md) | Detail semua fitur |
-| [SYSTEM-ARCHITECTURE.md](docs/architecture/SYSTEM-ARCHITECTURE.md) | Arsitektur sistem |
-| [DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md) | Script untuk demo |
-| [LAPORAN-HASIL.md](docs/LAPORAN-HASIL.md) | Laporan hasil hackathon |
-| [ROADMAP.md](docs/ROADMAP.md) | Rencana pengembangan |
+| Document | Description |
+|----------|-------------|
+| [FEATURES.md](docs/features/FEATURES.md) | Detailed feature list |
+| [SYSTEM-ARCHITECTURE.md](docs/architecture/SYSTEM-ARCHITECTURE.md) | System architecture |
+| [DEMO-SCRIPT.md](docs/DEMO-SCRIPT.md) | Demo script |
+| [RESULTS-REPORT.md](docs/RESULTS-REPORT.md) | Hackathon results report |
+| [ROADMAP.md](docs/ROADMAP.md) | Development roadmap |
 
 ---
 
-## 🏗️ Arsitektur
+## 🏗️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -240,10 +240,10 @@ PINATA_SECRET_KEY=your_pinata_secret
 
 ---
 
-## ✅ Status Fitur
+## ✅ Feature Status
 
-| Fitur | Status | Keterangan |
-|-------|--------|------------|
+| Feature | Status | Notes |
+|---------|--------|-------|
 | Token Creation | ✅ Complete | One-click launch |
 | AI Image Gen | ✅ Complete | DALL-E 3 + FLUX.2 |
 | Bonding Curve | ✅ Complete | Buy/sell working |
@@ -277,19 +277,19 @@ Network: Chipnet (testnet)
 
 ---
 
-## 🤝 Kontribusi
+## 🤝 Contributing
 
 1. Fork repository
-2. Buat branch fitur (`git checkout -b feature/amazing-feature`)
-3. Commit perubahan (`git commit -m 'Add amazing feature'`)
-4. Push ke branch (`git push origin feature/amazing-feature`)
-5. Buka Pull Request
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
 ---
 
-## 📄 Lisensi
+## 📄 License
 
-MIT License - lihat [LICENSE](LICENSE) untuk detail.
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
