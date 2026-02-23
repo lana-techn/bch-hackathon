@@ -1,23 +1,23 @@
 # IgniteBCH - Post-Sprint Development Roadmap
 
-## Rencana Pengembangan Pasca-Hackathon
+## Post-Hackathon Development Plan
 
-**Versi:** 1.0  
-**Update:** 23 Februari 2026  
+**Version:** 1.0  
+**Updated:** February 23, 2026  
 **Timeline:** Q1-Q4 2026
 
 ---
 
-## 🎯 Visi & Misi
+## 🎯 Vision & Mission
 
-### Visi
-Menjadi platform fair launch token terbesar di Bitcoin Cash dengan pengalaman pengguna terbaik dan fitur paling lengkap.
+### Vision
+Become the largest fair launch token platform on Bitcoin Cash with the best user experience and most complete features.
 
-### Misi
-1. Menurunkan barrier entry untuk token creation
-2. Menyediakan trading yang fair dan transparan
-3. Membangun ekosistem token yang sustainable
-4. Mendemokratisasi akses ke DeFi
+### Mission
+1. Lower the barrier to entry for token creation
+2. Provide fair and transparent trading
+3. Build a sustainable token ecosystem
+4. Democratize access to DeFi
 
 ---
 
@@ -51,23 +51,23 @@ Q4 2026: Scale & Monetize
 
 ### 1.1 Mainnet Launch
 
-**Target:** Maret 2026
+**Target:** March 2026
 
 **Tasks:**
-- [ ] Deploy smart contract ke mainnet
+- [ ] Deploy smart contract to mainnet
 - [ ] Setup mainnet electrum servers
 - [ ] Configure production environment
 - [ ] SSL certificate & domain setup
-- [ ] CDN untuk static assets
+- [ ] CDN for static assets
 
 **Success Metrics:**
-- Platform live di mainnet
-- 10+ token ter-launch dalam minggu pertama
+- Platform live on mainnet
+- 10+ tokens launched in first week
 - Zero critical bugs
 
 ### 1.2 Security Audit
 
-**Target:** Februari-Maret 2026
+**Target:** February-March 2026
 
 **Scope:**
 - [ ] Smart contract audit (internal + community)
@@ -82,7 +82,7 @@ Q4 2026: Scale & Monetize
 
 ### 1.3 Performance Optimization
 
-**Target:** Maret 2026
+**Target:** March 2026
 
 **Tasks:**
 - [ ] Database indexing
@@ -107,7 +107,7 @@ Q4 2026: Scale & Monetize
 **Target:** April 2026
 
 **Goals:**
-- Auto-listing graduated tokens ke DEX
+- Auto-listing graduated tokens to DEX
 - Liquidity pool creation
 - Price discovery beyond bonding curve
 
@@ -132,7 +132,7 @@ async function graduateToken(tokenId: string) {
 
 ### 2.2 Advanced Analytics
 
-**Target:** Mei 2026
+**Target:** May 2026
 
 **Features:**
 - [ ] TradingView-style price charts
@@ -148,7 +148,7 @@ BCH Network → Electrum → Indexer → Database → API → Frontend
 
 ### 2.3 Mobile PWA
 
-**Target:** Juni 2026
+**Target:** June 2026
 
 **Features:**
 - [ ] Progressive Web App
@@ -168,7 +168,7 @@ BCH Network → Electrum → Indexer → Database → API → Frontend
 
 ### 3.1 Developer API
 
-**Target:** Juli 2026
+**Target:** July 2026
 
 **Endpoints:**
 ```
@@ -188,7 +188,7 @@ POST /api/v1/trade/sell          # Sell tokens
 
 ### 3.2 SDK Release
 
-**Target:** Agustus 2026
+**Target:** August 2026
 
 **Packages:**
 ```javascript
@@ -232,7 +232,7 @@ const tx = await client.buy({
 
 ### 4.1 Enterprise Features
 
-**Target:** Oktober 2026
+**Target:** October 2026
 
 **Features:**
 - [ ] Custom bonding curve parameters
@@ -266,7 +266,7 @@ const tx = await client.buy({
 
 ### 4.3 Multi-chain Support
 
-**Target:** Desember 2026
+**Target:** December 2026
 
 **Chains:**
 | Chain | Status | Priority |
@@ -448,15 +448,15 @@ const tx = await client.buy({
 
 ## 📝 Conclusion
 
-IgniteBCH memiliki roadmap yang jelas untuk menjadi platform fair launch token terdepan di Bitcoin Cash. Dengan fokus pada:
+IgniteBCH has a clear roadmap to become the leading fair launch token platform on Bitcoin Cash. With focus on:
 
-1. **Production readiness** di Q1
-2. **Feature expansion** di Q2
-3. **Ecosystem growth** di Q3
-4. **Scale & monetize** di Q4
+1. **Production readiness** in Q1
+2. **Feature expansion** in Q2
+3. **Ecosystem growth** in Q3
+4. **Scale & monetize** in Q4
 
-Target menjadi platform dengan 5,000+ token dan $1M+ TVL di akhir 2026 sangat achievable dengan eksekusi yang tepat.
+The target of becoming a platform with 5,000+ tokens and $1M+ TVL by end of 2026 is very achievable with proper execution.
 
 ---
 
-*Roadmap ini akan diupdate secara berkala berdasarkan progress dan feedback komunitas.*
+*This roadmap will be updated regularly based on progress and community feedback.*
