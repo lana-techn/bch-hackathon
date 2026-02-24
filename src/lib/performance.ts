@@ -46,8 +46,6 @@ export function getOptimizedImageUrl(
   width: number,
   quality = 80
 ): string {
-  // If using Next.js Image component, this is handled automatically
-  // For external images, you might use a CDN
   return src;
 }
 
@@ -73,7 +71,6 @@ export function reportWebVitals(metric: any): void {
     const body = JSON.stringify(metric);
     const url = '/api/analytics/web-vitals';
 
-    // Use `navigator.sendBeacon()` if available, falling back to `fetch()`
     if (navigator.sendBeacon) {
       navigator.sendBeacon(url, body);
     } else {
@@ -87,7 +84,7 @@ function LoadingComponent(): ReactNode {
   return null;
 }
 
-// Create lazy component with dynamic import
+// Lazy component with dynamic import
 export function createLazyComponent(
   importFn: () => Promise<any>,
   options?: {
