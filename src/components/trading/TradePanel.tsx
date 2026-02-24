@@ -206,8 +206,8 @@ export function TradePanel({ tokenTicker, tokenId, currentSupplySold }: TradePan
         <button
           onClick={() => switchMode("buy")}
           className={`flex-1 py-3 font-[family-name:var(--font-heading)] text-sm font-bold uppercase tracking-wider transition-colors border-b-3 ${mode === "buy"
-              ? "bg-neon/10 text-neon border-neon"
-              : "bg-void text-text-dim border-border hover:text-text"
+            ? "bg-neon/10 text-neon border-neon"
+            : "bg-void text-text-dim border-border hover:text-text"
             }`}
         >
           Buy
@@ -215,8 +215,8 @@ export function TradePanel({ tokenTicker, tokenId, currentSupplySold }: TradePan
         <button
           onClick={() => switchMode("sell")}
           className={`flex-1 py-3 font-[family-name:var(--font-heading)] text-sm font-bold uppercase tracking-wider transition-colors border-b-3 ${mode === "sell"
-              ? "bg-panic/10 text-panic border-panic"
-              : "bg-void text-text-dim border-border hover:text-text"
+            ? "bg-panic/10 text-panic border-panic"
+            : "bg-void text-text-dim border-border hover:text-text"
             }`}
         >
           Sell
@@ -329,8 +329,8 @@ export function TradePanel({ tokenTicker, tokenId, currentSupplySold }: TradePan
                 key={s}
                 onClick={() => setSlippage(s)}
                 className={`flex-1 py-1 font-[family-name:var(--font-mono)] text-xs border-2 transition-colors ${slippage === s
-                    ? "border-neon text-neon bg-neon/10"
-                    : "border-border text-text-dim hover:border-text"
+                  ? "border-neon text-neon bg-neon/10"
+                  : "border-border text-text-dim hover:border-text"
                   }`}
               >
                 {s}%
@@ -345,8 +345,8 @@ export function TradePanel({ tokenTicker, tokenId, currentSupplySold }: TradePan
             onClick={executeTrade}
             disabled={!isConnected || isProcessing || !quote}
             className={`relative w-full py-4 font-[family-name:var(--font-heading)] text-base font-bold uppercase tracking-wider brutal-btn border-3 transition-colors ${mode === "buy"
-                ? "bg-neon text-void border-neon hover:bg-neon/90 disabled:opacity-50"
-                : "bg-panic text-void border-panic hover:bg-panic/90 disabled:opacity-50"
+              ? "bg-neon text-void border-neon hover:bg-neon/90 disabled:opacity-50"
+              : "bg-panic text-void border-panic hover:bg-panic/90 disabled:opacity-50"
               }`}
           >
             {isProcessing ? (
@@ -444,9 +444,22 @@ export function TradePanel({ tokenTicker, tokenId, currentSupplySold }: TradePan
                 ref: {requestId}
               </p>
             )}
+            <a
+              href={`https://x.com/intent/tweet?text=${encodeURIComponent(
+                `Just ${mode === 'buy' ? 'bought' : 'sold'} $${tokenTicker} on @bch_hacks! 🚀\n\nCheck it out here:`
+              )}&url=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/token/${tokenId}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full brutal-btn flex items-center justify-center gap-2 bg-[#000000] text-white font-[family-name:var(--font-heading)] uppercase tracking-wider font-bold py-2 border-2 border-[#000000] hover:bg-[#000000]/80 transition-colors text-xs mt-2"
+            >
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.004 3.936H5.021z" />
+              </svg>
+              Share on X
+            </a>
             <button
               onClick={() => { setStep('idle'); setTxid(null); }}
-              className="w-full py-1.5 text-xs font-[family-name:var(--font-heading)] uppercase tracking-wider border-2 border-neon text-neon hover:bg-neon/10 transition-colors"
+              className="w-full py-1.5 text-xs font-[family-name:var(--font-heading)] uppercase tracking-wider border-2 border-neon text-neon hover:bg-neon/10 transition-colors mt-2"
             >
               Trade Again
             </button>
