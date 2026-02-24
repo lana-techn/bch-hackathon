@@ -1,13 +1,3 @@
-/**
- * Web3 Features Test Page
- * 
- * Demonstrates:
- * - IPFS file upload
- * - Gun.js comments
- * - Gun.js likes
- * - Real-time P2P sync
- */
-
 'use client';
 
 import { useState } from 'react';
