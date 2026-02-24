@@ -1,10 +1,3 @@
-/**
- * Simplified Web3 Database using localStorage
- * 
- * Gun.js relay down, using localStorage for now
- * Data persists per browser
- */
-
 export interface UserProfile {
   address: string;
   displayName?: string;
