@@ -1,4 +1,4 @@
-\export type NetworkType = 'chipnet' | 'mainnet';
+export type NetworkType = 'chipnet' | 'mainnet';
 
 export interface EnvConfig {
   network: NetworkType;
