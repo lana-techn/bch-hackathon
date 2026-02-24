@@ -10,6 +10,8 @@ export interface DeploymentStatus {
   txHash?: string;
   explorerUrl?: string;
   error?: string;
+  tokenId?: string;
+  tokenTicker?: string;
 }
 
 export interface TokenLaunchParams {
@@ -61,7 +63,7 @@ export function useTokenDeployment(): UseTokenDeploymentReturn {
     try {
       const response = await fetch(`/api/deploy?address=${encodeURIComponent(address)}`);
       const data = await response.json();
-      
+
       return {
         canDeploy: data.canDeploy,
         message: data.message,
@@ -161,6 +163,8 @@ export function useTokenDeployment(): UseTokenDeploymentReturn {
           progress: 100,
           txHash: result.genesisTxid,
           explorerUrl: result.explorerUrl,
+          tokenId: result.tokenId,
+          tokenTicker: params.ticker,
         });
 
         return {

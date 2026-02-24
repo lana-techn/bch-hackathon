@@ -58,23 +58,23 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://bch-hacks.vercel.app/",
-    siteName: "IiteBCH",
-    title: "IiteBCH - Fair Launch Protocol",
+    siteName: "IgniteBCH",
+    title: "IgniteBCH - Fair Launch Protocol",
     description: "Launch CashTokens instantly with bonding curve pricing",
     images: [
       {
-        url: "/og-image.png",
+        url: "https://bch-hacks.vercel.app/og-image.png",
         width: 1200,
         height: 630,
-        alt: "IiteBCH",
+        alt: "IgniteBCH",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "IiteBCH - Fair Launch Protocol",
+    title: "IgniteBCH - Fair Launch Protocol",
     description: "Launch CashTokens instantly with bonding curve pricing",
-    images: ["/og-image.png"],
+    images: ["https://bch-hacks.vercel.app/og-image.png"],
   },
   verification: {
     google: "your-google-verification-code",
@@ -107,8 +107,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html 
-      lang="en" 
+    <html
+      lang="en"
       className="dark"
       suppressHydrationWarning
     >

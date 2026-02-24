@@ -14,11 +14,15 @@ if [ -z "$commit_message" ]; then
     exit 1
 fi
 
-echo "Adding changes..."
-git add .
-
-echo "Committing..."
-git commit -m "$commit_message"
+echo "Finding changed files..."
+git status --porcelain | while IFS= read -r line; do
+    # Extract file path (starting from column 4 to handle spaces properly)
+    file="${line:3}"
+    
+    echo "Adding and committing: $file"
+    git add "$file"
+    git commit -m "$commit_message ($file)"
+done
 
 echo "Pushing to remote..."
 git push

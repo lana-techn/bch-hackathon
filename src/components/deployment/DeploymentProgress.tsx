@@ -49,27 +49,25 @@ export function DeploymentProgress({ status, onClose }: DeploymentProgressProps)
         </div>
 
         {/* Title */}
-        <h3 className={`font-[family-name:var(--font-heading)] text-xl font-bold uppercase text-center mb-4 ${
-          status.step === 'complete' ? 'text-neon' : status.step === 'error' ? 'text-panic-red' : 'text-text'
-        }`}>
-          {status.step === 'complete' 
-            ? 'Token Launched! 🚀' 
-            : status.step === 'error' 
-            ? 'Launch Failed' 
-            : 'Deploying Token...'}
+        <h3 className={`font-[family-name:var(--font-heading)] text-xl font-bold uppercase text-center mb-4 ${status.step === 'complete' ? 'text-neon' : status.step === 'error' ? 'text-panic-red' : 'text-text'
+          }`}>
+          {status.step === 'complete'
+            ? 'Token Launched! 🚀'
+            : status.step === 'error'
+              ? 'Launch Failed'
+              : 'Deploying Token...'}
         </h3>
 
         {/* Progress Bar */}
         <div className="mb-6">
           <div className="w-full h-3 bg-void border-2 border-border">
-            <div 
-              className={`h-full transition-all duration-500 ${
-                status.step === 'complete' 
-                  ? 'bg-neon' 
-                  : status.step === 'error' 
-                  ? 'bg-panic-red' 
-                  : 'bg-warn'
-              }`}
+            <div
+              className={`h-full transition-all duration-500 ${status.step === 'complete'
+                  ? 'bg-neon'
+                  : status.step === 'error'
+                    ? 'bg-panic-red'
+                    : 'bg-warn'
+                }`}
               style={{ width: `${status.progress}%` }}
             />
           </div>
@@ -89,7 +87,7 @@ export function DeploymentProgress({ status, onClose }: DeploymentProgressProps)
             <p className="text-xs font-mono text-text-dim mb-1">Transaction Hash:</p>
             <p className="text-xs font-mono text-neon break-all">{status.txHash}</p>
             {status.explorerUrl && (
-              <a 
+              <a
                 href={status.explorerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -110,16 +108,32 @@ export function DeploymentProgress({ status, onClose }: DeploymentProgressProps)
 
         {/* Close Button */}
         {(status.step === 'complete' || status.step === 'error') && onClose && (
-          <button
-            onClick={onClose}
-            className={`w-full brutal-btn font-bold py-3 border-2 transition-colors ${
-              status.step === 'complete'
-                ? 'bg-neon text-void border-neon hover:bg-neon/90'
-                : 'bg-void text-text border-border hover:border-text'
-            }`}
-          >
-            {status.step === 'complete' ? 'View Token' : 'Try Again'}
-          </button>
+          <div className="space-y-3">
+            {status.step === 'complete' && status.tokenId && status.tokenTicker && (
+              <a
+                href={`https://x.com/intent/tweet?text=${encodeURIComponent(
+                  `Just launched $${status.tokenTicker} on @bch_hacks! 🚀\n\nFair launch, no presale, bonding curve pricing.\n\nCheck it out here:`
+                )}&url=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/token/${status.tokenId}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full brutal-btn flex items-center justify-center gap-2 bg-[#000000] text-white font-[family-name:var(--font-heading)] uppercase tracking-wider font-bold py-3 border-2 border-[#000000] hover:bg-[#000000]/80 transition-colors"
+              >
+                <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.004 3.936H5.021z" />
+                </svg>
+                Share on X
+              </a>
+            )}
+            <button
+              onClick={onClose}
+              className={`w-full brutal-btn font-bold py-3 border-2 transition-colors ${status.step === 'complete'
+                  ? 'bg-neon text-void border-neon hover:bg-neon/90'
+                  : 'bg-void text-text border-border hover:border-text'
+                }`}
+            >
+              {status.step === 'complete' ? 'View Token' : 'Try Again'}
+            </button>
+          </div>
         )}
 
         {/* Processing indicator */}
