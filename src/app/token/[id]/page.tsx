@@ -1,4 +1,5 @@
 import { Suspense, memo } from "react";
+import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { mockTokens } from "@/data/mock-tokens";
 import { getTradesForToken, getCommentsForToken } from "@/data/mock-tokens";
@@ -8,38 +9,40 @@ import { TokenPerformanceStats } from "@/components/trading/TokenPerformanceStat
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ShareButton } from "@/components/social/ShareButton";
+
 // Lazy load heavy chart components
 const TradingViewChart = dynamic(
   () => import("@/components/trading/TradingViewChart").then(mod => ({ default: mod.TradingViewChart })),
-  { 
+  {
     loading: () => <ChartSkeleton height={350} />,
   }
 );
 
 const VolumeChart = dynamic(
   () => import("@/components/trading/VolumeChart").then(mod => ({ default: mod.VolumeChart })),
-  { 
+  {
     loading: () => <ChartSkeleton height={180} />,
   }
 );
 
 const TradeHistory = dynamic(
   () => import("@/components/trading/TradeHistory").then(mod => ({ default: mod.TradeHistory })),
-  { 
+  {
     loading: () => <div className="h-64 bg-card border-3 border-border animate-pulse" />,
   }
 );
 
 const CommentStream = dynamic(
   () => import("@/components/social/CommentStream").then(mod => ({ default: mod.CommentStream })),
-  { 
+  {
     loading: () => <div className="h-80 bg-card border-3 border-border animate-pulse" />,
   }
 );
 
 const Web3CommentStream = dynamic(
   () => import("@/components/web3").then(mod => ({ default: mod.Web3CommentStream })),
-  { 
+  {
     loading: () => <div className="h-80 bg-card border-3 border-border animate-pulse" />,
   }
 );
@@ -47,7 +50,7 @@ const Web3CommentStream = dynamic(
 // Loading skeleton for charts
 function ChartSkeleton({ height }: { height: number }) {
   return (
-    <div 
+    <div
       className="bg-card border-3 border-border animate-pulse flex items-center justify-center"
       style={{ height }}
     >
@@ -57,11 +60,11 @@ function ChartSkeleton({ height }: { height: number }) {
 }
 
 // Memoized stat item
-const StatItem = memo(function StatItem({ 
-  label, 
-  value 
-}: { 
-  label: string; 
+const StatItem = memo(function StatItem({
+  label,
+  value
+}: {
+  label: string;
   value: string;
 }) {
   return (
@@ -77,12 +80,12 @@ const StatItem = memo(function StatItem({
 });
 
 // Token header component
-const TokenHeader = memo(function TokenHeader({ 
-  token, 
-  graduationProgress, 
-  isPositive, 
-  supplyPercentage 
-}: { 
+const TokenHeader = memo(function TokenHeader({
+  token,
+  graduationProgress,
+  isPositive,
+  supplyPercentage
+}: {
   token: typeof mockTokens[0];
   graduationProgress: number;
   isPositive: boolean;
@@ -128,6 +131,9 @@ const TokenHeader = memo(function TokenHeader({
                   by {shortenAddress(token.creatorAddress)}
                 </span>
               </div>
+              <div className="mt-2">
+                <ShareButton ticker={token.ticker} tokenId={token.id} />
+              </div>
             </div>
           </div>
 
@@ -144,22 +150,20 @@ const TokenHeader = memo(function TokenHeader({
                 ${token.priceUSD.toFixed(8)} USD
               </p>
             </div>
-            
+
             <div className="text-right">
               <p className="font-[family-name:var(--font-heading)] text-xs uppercase text-text-dim">
                 24h Change
               </p>
               <p
-                className={`font-[family-name:var(--font-mono)] text-2xl font-bold tabular-nums ${
-                  isPositive ? "text-neon" : "text-panic"
-                }`}
+                className={`font-[family-name:var(--font-mono)] text-2xl font-bold tabular-nums ${isPositive ? "text-neon" : "text-panic"
+                  }`}
               >
                 {formatPercent(token.change24h)}
               </p>
               {token.change7d && (
-                <p className={`font-[family-name:var(--font-mono)] text-xs ${
-                  token.change7d >= 0 ? "text-neon" : "text-panic"
-                }`}>
+                <p className={`font-[family-name:var(--font-mono)] text-xs ${token.change7d >= 0 ? "text-neon" : "text-panic"
+                  }`}>
                   7d: {formatPercent(token.change7d)}
                 </p>
               )}
@@ -211,6 +215,49 @@ interface TokenPageProps {
   params: Promise<{ id: string }>;
 }
 
+export async function generateMetadata({ params }: TokenPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const token = mockTokens.find((t) => t.id === id);
+
+  if (!token) {
+    return {
+      title: "Token Not Found | IgniteBCH",
+    };
+  }
+
+  const title = `$${token.ticker} - ${token.name} | IgniteBCH`;
+  const description = token.description || `Trade $${token.ticker} on IgniteBCH, the Fair Launch Protocol on Bitcoin Cash.`;
+  // Construct the absolute image URL if using mock tokens or relative paths
+  // Default to relative if it doesn't start with http
+  const imageUrl = token.image?.startsWith("http")
+    ? token.image
+    : `https://bch-hacks.vercel.app${token.image || "/og-image.png"}`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url: imageUrl,
+          width: 800,
+          height: 800,
+          alt: token.name,
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
+}
+
 export default async function TokenPage({ params }: TokenPageProps) {
   const { id } = await params;
   const token = mockTokens.find((t) => t.id === id);
@@ -237,7 +284,7 @@ export default async function TokenPage({ params }: TokenPageProps) {
         </Link>
 
         {/* Token Header */}
-        <TokenHeader 
+        <TokenHeader
           token={token}
           graduationProgress={graduationProgress}
           isPositive={isPositive}
@@ -251,11 +298,11 @@ export default async function TokenPage({ params }: TokenPageProps) {
             <Suspense fallback={<ChartSkeleton height={350} />}>
               <TradingViewChart />
             </Suspense>
-            
+
             <Suspense fallback={<ChartSkeleton height={180} />}>
               <VolumeChart />
             </Suspense>
-            
+
             <Suspense fallback={<div className="h-64 bg-card border-3 border-border animate-pulse" />}>
               <TradeHistory trades={trades} />
             </Suspense>
@@ -270,9 +317,9 @@ export default async function TokenPage({ params }: TokenPageProps) {
                 currentSupplySold={token.currentSupply}
               />
             </div>
-            
+
             <TokenPerformanceStats token={token} />
-            
+
             <Suspense fallback={<div className="h-80 bg-card border-3 border-border animate-pulse" />}>
               <Web3CommentStream tokenId={token.id} />
             </Suspense>
