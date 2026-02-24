@@ -100,56 +100,6 @@ Market Cap reaches 40 BCH
 
 ---
 
-## 📦 Installation
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-- Git
-
-### Quick Start
-
-```bash
-# Clone repository
-git clone https://github.com/lana-techn/bch-hackathon.git
-cd bch-hackathon
-
-# Install dependencies
-npm install
-
-# Setup environment
-cp .env.example .env.local
-# Edit .env.local with your keys
-
-# Run development server
-npm run dev
-
-# Open http://localhost:3000
-```
-
-### Environment Variables
-
-```env
-# Network
-NEXT_PUBLIC_NETWORK=chipnet
-
-# Wallet Keys (for server-side signing)
-DEPLOYER_WIF=your_wif_key_here
-DEMO_SIGNING_WIF=your_wif_key_here
-FEE_ADDRESS=your_fee_address_here
-
-# AI Services (optional)
-OPENAI_API_KEY=your_openai_key
-OPENROUTER_API_KEY=your_openrouter_key
-
-# IPFS (optional)
-PINATA_API_KEY=your_pinata_key
-PINATA_SECRET_KEY=your_pinata_secret
-```
-
----
-
 ## 🚀 Usage
 
 ### 1. Creating a Token
@@ -277,15 +227,6 @@ Network: Chipnet (testnet)
 
 ---
 
-## 🤝 Contributing
-
-1. Fork repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
-
----
 
 ## 📄 License
 
@@ -296,10 +237,8 @@ MIT License - see [LICENSE](LICENSE) for details.
 ## 🙏 Acknowledgments
 
 - Bitcoin Cash Community
-- CashScript Team
-- Paytaca Wallet
-- Gun.js Community
-- OpenAI
+- BCH Hackellator
+- Dorahacks
 
 ---
 

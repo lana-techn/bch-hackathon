@@ -1,14 +1,3 @@
-/**
- * Hybrid AI Image Generation Service
- * 
- * Primary: OpenAI DALL-E 3 (most reliable)
- * Fallback: OpenRouter FLUX (if DALL-E fails)
- * 
- * Setup:
- * 1. Get OpenAI key: https://platform.openai.com
- * 2. Get OpenRouter key: https://openrouter.ai/keys (optional fallback)
- */
-
 export interface ImageGenerateResult {
   success: boolean;
   imageUrl?: string;

@@ -1,10 +1,3 @@
-/**
- * IiteBCH - Environment Configuration
- *
- * Validates and provides typed access to environment variables.
- * Used by deployment scripts and server-side code.
- */
-
 export type NetworkType = 'chipnet' | 'mainnet';
 
 export interface EnvConfig {
@@ -14,10 +7,6 @@ export interface EnvConfig {
   electrumHost?: string;
 }
 
-/**
- * Load and validate environment config.
- * Throws descriptive errors if required vars are missing.
- */
 export function loadEnvConfig(): EnvConfig {
   const network = (process.env.NEXT_PUBLIC_NETWORK || 'chipnet') as NetworkType;
   if (network !== 'chipnet' && network !== 'mainnet') {

@@ -1,12 +1,3 @@
-/**
- * OpenRouter AI Service - GRATIS!
- * 
- * Image Generation: black-forest-labs/flux.2-max (FREE)
- * Text Generation: openrouter/aurora-alpha (FREE)
- * 
- * Get API key: https://openrouter.ai/keys
- */
-
 export interface ImageGenerateResult {
   success: boolean;
   imageUrl?: string;
