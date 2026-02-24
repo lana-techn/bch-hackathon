@@ -1,13 +1,3 @@
-/**
- * IgniteBCH - WalletConnect Hook
- *
- * Hook untuk connect ke wallet via WalletConnect v2 (BCH WalletConnect spec)
- * Digunakan oleh Cashonize dan wallet mobile lainnya
- * 
- * NOTE: Requires NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID environment variable
- * Get one free at: https://cloud.walletconnect.com
- */
-
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
