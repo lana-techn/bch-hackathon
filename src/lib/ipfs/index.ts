@@ -1,16 +1,3 @@
-/**
- * IgniteBCH - IPFS Service
- * 
- * Uses Pinata for IPFS file storage
- * Free tier: 1GB storage, 100 uploads/month
- * 
- * Setup:
- * 1. Create account at https://pinata.cloud
- * 2. Get JWT from API Keys section
- * 3. Add to .env.local: PINATA_JWT=your_jwt_here
- * 4. Add gateway: NEXT_PUBLIC_PINATA_GATEWAY=your-gateway.mypinata.cloud
- */
-
 import { PinataSDK } from 'pinata';
 
 // Initialize Pinata client
