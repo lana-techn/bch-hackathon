@@ -1,13 +1,3 @@
-/**
- * DALL-E AI Image Generation Service
- * 
- * Generate token images using OpenAI's DALL-E 3
- * 
- * Setup:
- * 1. Get API key dari https://platform.openai.com
- * 2. Add to .env: OPENAI_API_KEY=sk-...
- */
-
 export interface DalleGenerateResult {
   success: boolean;
   imageUrl?: string;
@@ -140,16 +130,11 @@ export async function generateTokenImageVariations(
   return results;
 }
 
-/**
- * Check if DALL-E is configured
- */
 export function isDalleConfigured(): boolean {
   return !!process.env.NEXT_PUBLIC_OPENAI_API_KEY;
 }
 
-/**
- * Get DALL-E usage info
- */
+
 export function getDallePricing(): { model: string; cost: string }[] {
   return [
     { model: 'DALL-E 3 (1024x1024)', cost: '$0.040 per image' },
