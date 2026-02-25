@@ -66,11 +66,7 @@ export function Navbar() {
           <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-neon brutal-shadow flex items-center justify-center">
-                <span className="text-void font-bold text-lg font-[family-name:var(--font-heading)]">
-                  I
-                </span>
-              </div>
+              <img src="/IITE-logo.svg" alt="IiteBCH Logo" className="w-8 h-8 brutal-shadow" />
               <span className="font-[family-name:var(--font-heading)] text-xl font-bold uppercase tracking-wider text-text group-hover:text-neon transition-colors">
                 Iite<span className="text-neon">BCH</span>
               </span>
@@ -173,8 +169,8 @@ export function Navbar() {
         </nav>
 
         {/* WalletConnect Modal */}
-        <WalletConnectModal 
-          isOpen={showWalletConnect} 
+        <WalletConnectModal
+          isOpen={showWalletConnect}
           onClose={() => setShowWalletConnect(false)}
           onConnect={(address) => {
             console.log('[Navbar] WalletConnect connected:', address);
@@ -192,11 +188,7 @@ export function Navbar() {
       <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 bg-neon brutal-shadow flex items-center justify-center">
-            <span className="text-void font-bold text-lg font-[family-name:var(--font-heading)]">
-              I
-            </span>
-          </div>
+          <img src="/IITE-logo.svg" alt="IiteBCH Logo" className="w-8 h-8 brutal-shadow" />
           <span className="font-[family-name:var(--font-heading)] text-xl font-bold uppercase tracking-wider text-text group-hover:text-neon transition-colors">
             Iite<span className="text-neon">BCH</span>
           </span>
