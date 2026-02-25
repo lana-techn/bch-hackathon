@@ -40,6 +40,10 @@ export const metadata: Metadata = {
   description:
     "Launch CashTokens instantly with bonding curve pricing. No presale, no team allocation, 100% safe liquidity. Fair launch on Bitcoin Cash.",
   keywords: ["Bitcoin Cash", "CashTokens", "bonding curve", "fair launch", "DEX", "DeFi"],
+  icons: {
+    icon: "/IITE-logo.svg",
+    apple: "/IITE-logo.svg",
+  },
   authors: [{ name: "IiteBCH" }],
   creator: "IiteBCH",
   publisher: "IiteBCH",
