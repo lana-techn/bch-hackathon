@@ -1,17 +1,17 @@
 /**
- * Real Blockchain Deployment Service for IgniteBCH
+ * Real Blockchain Deployment Service for IITEBCH
  * 
  * Uses CashScript for smart contract deployment
  * Integrates with BCH network via Electrum
  * Creates 3 transactions: Genesis, Mint, Lock
  */
 
-import { 
-  Contract, 
-  TransactionBuilder, 
+import {
+  Contract,
+  TransactionBuilder,
   ElectrumNetworkProvider,
   SignatureTemplate,
-  Network 
+  Network
 } from 'cashscript';
 import { hash160 } from '@cashscript/utils';
 import { decodeCashAddress, encodeCashAddress, CashAddressType } from '@bitauth/libauth';
@@ -71,7 +71,7 @@ function addressToHash160(address: string, network: 'chipnet' | 'mainnet' = 'chi
     const prefix = network === 'mainnet' ? 'bitcoincash' : 'bchtest';
     fullAddress = `${prefix}:${address}`;
   }
-  
+
   const decoded = decodeCashAddress(fullAddress);
   if (typeof decoded === 'string') {
     throw new Error(`Invalid address: ${decoded}`);
@@ -111,7 +111,7 @@ export async function deployTokenReal(
 ): Promise<TokenDeploymentResult> {
   // MOCK MODE: Simulate deployment for demo
   console.log('MOCK DEPLOYMENT:', { name, ticker, creatorAddress });
-  
+
   try {
     // Simulate deployment steps
     onProgress?.({
@@ -210,7 +210,7 @@ export async function deployTokenRealActual(
       prefix,
       type: CashAddressType.p2pkh,
     });
-    
+
     if (typeof deployerAddressResult === 'string') {
       throw new Error(`Failed to encode address: ${deployerAddressResult}`);
     }
@@ -242,15 +242,15 @@ export async function deployTokenRealActual(
     // This reduces chance of using an already-spent UTXO
     const minGenesisAmount = 2000n; // Minimum for genesis tx
     const suitableUtxos = nonTokenUtxos.filter(u => u.satoshis >= minGenesisAmount);
-    
+
     if (suitableUtxos.length === 0) {
       throw new Error('No suitable UTXOs found. Need at least 2000 satoshis.');
     }
-    
+
     // Sort ascending to pick smallest suitable UTXO
     suitableUtxos.sort((a, b) => Number(a.satoshis - b.satoshis));
     const genesisUtxo = suitableUtxos[0];
-    
+
     // Generate unique token category based on genesis UTXO + timestamp
     const uniqueSuffix = Date.now().toString(16).slice(-8);
     const tokenCategory = genesisUtxo.txid.slice(0, 56) + uniqueSuffix;
@@ -292,7 +292,7 @@ export async function deployTokenRealActual(
       prefix,
       type: CashAddressType.p2pkhWithTokens,
     });
-    
+
     if (typeof deployerTokenAddressResult === 'string') {
       throw new Error(`Failed to encode token address: ${deployerTokenAddressResult}`);
     }
@@ -446,14 +446,14 @@ export async function checkDeploymentRequirements(
 ): Promise<{ canDeploy: boolean; balance: bigint; required: bigint; message: string }> {
   try {
     const provider = getProvider(network);
-    
+
     // Ensure address has proper prefix
     let fullAddress = address;
     if (!address.includes(':')) {
       const prefix = network === 'mainnet' ? 'bitcoincash' : 'bchtest';
       fullAddress = `${prefix}:${address}`;
     }
-    
+
     const utxos = await provider.getUtxos(fullAddress);
     const balance = utxos.reduce((sum, u) => sum + u.satoshis, 0n);
     const required = LAUNCH_FEE_SAT + 20000n; // Fee + buffer
