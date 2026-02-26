@@ -1,6 +1,6 @@
 {
-  "name": "IgniteBCH - Fair Launch Protocol",
-  "short_name": "IgniteBCH",
+  "name": "IITEBCH - Fair Launch Protocol",
+  "short_name": "IITEBCH",
   "description": "Launch CashTokens instantly with bonding curve pricing on Bitcoin Cash",
   "start_url": "/",
   "display": "standalone",
