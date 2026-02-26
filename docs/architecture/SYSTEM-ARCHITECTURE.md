@@ -1,8 +1,8 @@
-# IgniteBCH - System Architecture
+# IITEBCH - System Architecture
 
 ## Overview
 
-IgniteBCH is a full-stack decentralized application (dApp) for launching and trading CashTokens on Bitcoin Cash. The architecture follows a hybrid Web3 model combining on-chain smart contracts, off-chain P2P data, and traditional web infrastructure.
+IITEBCH is a full-stack decentralized application (dApp) for launching and trading CashTokens on Bitcoin Cash. The architecture follows a hybrid Web3 model combining on-chain smart contracts, off-chain P2P data, and traditional web infrastructure.
 
 ---
 
@@ -648,7 +648,7 @@ Uptime: Vercel Status
 
 ## Summary
 
-**IgniteBCH Architecture Principles:**
+**IITEBCH Architecture Principles:**
 
 1. **Decentralized First**: P2P data, non-custodial
 2. **Bitcoin Cash Native**: Optimized for BCH
