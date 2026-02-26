@@ -1,5 +1,5 @@
 /**
- * IgniteBCH — Retry / Backoff Utility
+ * IITEBCH — Retry / Backoff Utility
  *
  * `withRetry` wraps any async function with configurable exponential backoff.
  * Only retries on errors where `isRetryable(err) === true` so that validation
