@@ -188,7 +188,7 @@ export function TradePanel({ tokenTicker, tokenId, currentSupplySold }: TradePan
   };
 
   const isProcessing = step === 'processing';
-  const quickAmountsBuy = [0.01, 0.05, 0.1, 0.5, 1.0];
+  const quickAmountsBuy = [0.001, 0.01, 0.05, 0.1, 0.5];
   const quickAmountsSell = [1_000_000, 5_000_000, 10_000_000, 50_000_000];
 
   // ─── Wallet type badge ────────────────────────────────────────────────────────
@@ -252,7 +252,7 @@ export function TradePanel({ tokenTicker, tokenId, currentSupplySold }: TradePan
               type="number"
               value={inputAmount}
               onChange={(e) => setInputAmount(e.target.value)}
-              placeholder="0.00"
+              placeholder="0.001"
               disabled={isProcessing}
               className="w-full bg-void border-2 border-border focus:border-neon outline-none px-3 py-3 font-[family-name:var(--font-mono)] text-lg text-text tabular-nums placeholder:text-text-dim/30 disabled:opacity-50"
             />

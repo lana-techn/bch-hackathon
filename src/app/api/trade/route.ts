@@ -319,6 +319,8 @@ export async function POST(request: NextRequest) {
           546n, // dust — user sends tokens back to contract
           `Sell ${tokensToSellBigInt} tokens`,
           `IITEBCH bonding curve sell`,
+          instance.contract.tokenAddress, // Token ID (same as tokenAddress for this curve)
+          tokensToSellBigInt
         );
         return NextResponse.json({
           success: true,

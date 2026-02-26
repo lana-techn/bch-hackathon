@@ -19,6 +19,21 @@ const Web3CommentStream = dynamic(
     { loading: () => <div className="h-80 bg-card border-3 border-border animate-pulse" /> }
 );
 
+const TradingViewChart = dynamic(
+    () => import('@/components/trading/TradingViewChart').then(mod => ({ default: mod.TradingViewChart })),
+    { loading: () => <div className="h-[450px] bg-card border-3 border-border animate-pulse" /> }
+);
+
+const VolumeChart = dynamic(
+    () => import('@/components/trading/VolumeChart').then(mod => ({ default: mod.VolumeChart })),
+    { loading: () => <div className="h-[250px] bg-card border-3 border-border animate-pulse" /> }
+);
+
+const TradeHistory = dynamic(
+    () => import('@/components/trading/TradeHistory').then(mod => ({ default: mod.TradeHistory })),
+    { loading: () => <div className="h-64 bg-card border-3 border-border animate-pulse" /> }
+);
+
 const StatItem = memo(function StatItem({ label, value }: { label: string; value: string }) {
     return (
         <div className="p-4 border-r-2 border-border last:border-r-0">
@@ -169,13 +184,17 @@ export default function TokenPageClient({ tokenId }: { tokenId: string }) {
                 {/* Main Content Grid */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Placeholder for charts - new token has no history yet */}
-                        <div className="bg-card border-3 border-border p-8 text-center">
-                            <p className="font-[family-name:var(--font-heading)] text-sm uppercase text-text-dim mb-2">Price Chart</p>
-                            <p className="font-[family-name:var(--font-mono)] text-xs text-text-dim">
-                                Chart data will appear after the first trades.
-                            </p>
-                        </div>
+                        <Suspense fallback={<div className="h-[450px] bg-card border-3 border-border animate-pulse" />}>
+                            <TradingViewChart />
+                        </Suspense>
+
+                        <Suspense fallback={<div className="h-[250px] bg-card border-3 border-border animate-pulse" />}>
+                            <VolumeChart />
+                        </Suspense>
+
+                        <Suspense fallback={<div className="h-64 bg-card border-3 border-border animate-pulse" />}>
+                            <TradeHistory trades={[]} />
+                        </Suspense>
                     </div>
 
                     <div className="space-y-6">

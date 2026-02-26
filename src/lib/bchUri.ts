@@ -17,14 +17,16 @@ export function satsToBchString(satoshis: bigint): string {
 }
 
 /**
- * Build a BIP-21 BCH payment URI.
- * Format: bitcoincash:<address>?amount=<BCH>&label=<label>&message=<msg>
+ * Build a BIP-21 BCH payment URI, optionally with CashToken parameters.
+ * Format: bitcoincash:<address>?amount=<BCH>&amount1=<tokenAmount>&tokenId=<tokenId>
  */
 export function buildBchPaymentUri(
     address: string,
     amountSatoshis: bigint,
     label?: string,
     message?: string,
+    tokenId?: string,
+    tokenAmount?: bigint,
 ): string {
     // Strip prefix for URI
     const bare = address.replace('bitcoincash:', '').replace('bchtest:', '');
@@ -34,6 +36,12 @@ export function buildBchPaymentUri(
     params.set('amount', satsToBchString(amountSatoshis));
     if (label) params.set('label', label);
     if (message) params.set('message', message);
+
+    // Add CashToken parameters if provided
+    if (tokenId && tokenAmount !== undefined) {
+        params.set('amount1', tokenAmount.toString());
+        params.set('tokenId', tokenId);
+    }
 
     return `${prefix}:${bare}?${params.toString()}`;
 }

@@ -1,8 +1,9 @@
 'use client';
 
-import { memo, useState, useMemo } from "react";
+import { memo, useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { mockTokens } from "@/data/mock-tokens";
+import { getAllTokens } from "@/lib/launched-tokens";
 import { TokenCard } from "@/components/ui/TokenCard";
 import { KingOfTheHill } from "@/components/ui/KingOfTheHill";
 import { SmoothScroll } from "@/components/providers";
@@ -12,34 +13,33 @@ import { FadeInSection, ParallaxSection, StaggerContainer } from "@/components/a
 type FilterType = "Trending" | "New" | "Graduating" | "Graduated";
 
 // Memoized components
-const FilterButton = memo(function FilterButton({ 
-  filter, 
+const FilterButton = memo(function FilterButton({
+  filter,
   isActive,
   onClick,
-}: { 
-  filter: string; 
+}: {
+  filter: string;
   isActive: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1 font-[family-name:var(--font-heading)] text-xs uppercase tracking-wider border-2 transition-colors ${
-        isActive
+      className={`px-3 py-1 font-[family-name:var(--font-heading)] text-xs uppercase tracking-wider border-2 transition-colors ${isActive
           ? "border-neon text-neon bg-neon/10"
           : "border-border text-text-dim hover:border-text hover:text-text"
-      }`}
+        }`}
     >
       {filter}
     </button>
   );
 });
 
-const TokenStats = memo(function TokenStats({ 
+const TokenStats = memo(function TokenStats({
   totalTokens,
   graduatedCount,
-  graduatingCount 
-}: { 
+  graduatingCount
+}: {
   totalTokens: number;
   graduatedCount: number;
   graduatingCount: number;
@@ -121,14 +121,20 @@ const TokenGrid = memo(function TokenGrid({ tokens }: { tokens: typeof mockToken
 export default function Home() {
   const [activeFilter, setActiveFilter] = useState<FilterType>("Trending");
   const filters: FilterType[] = ["Trending", "New", "Graduating", "Graduated"];
+  const [allTokens, setAllTokens] = useState(mockTokens);
+
+  // Load launched tokens from localStorage on mount
+  useEffect(() => {
+    setAllTokens(getAllTokens(mockTokens));
+  }, []);
 
   // Calculate graduation progress for each token
   const tokensWithProgress = useMemo(() => {
-    return mockTokens.map(token => ({
+    return allTokens.map(token => ({
       ...token,
       graduationProgress: (token.marketCapBCH / token.graduationTarget) * 100
     }));
-  }, []);
+  }, [allTokens]);
 
   // Filter and sort tokens based on active filter
   const filteredTokens = useMemo(() => {
@@ -138,27 +144,27 @@ export default function Home() {
         return [...tokensWithProgress]
           .sort((a, b) => b.volume24hBCH - a.volume24hBCH)
           .slice(0, 6);
-      
+
       case "New":
         // Sort by creation date (newest first)
         return [...tokensWithProgress]
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 6);
-      
+
       case "Graduating":
         // Tokens with 50-99% graduation progress and not graduated
         return tokensWithProgress
           .filter(t => t.graduationProgress >= 50 && t.graduationProgress < 100 && !t.isGraduated)
           .sort((a, b) => b.graduationProgress - a.graduationProgress)
           .slice(0, 6);
-      
+
       case "Graduated":
         // Only graduated tokens
         return tokensWithProgress
           .filter(t => t.isGraduated)
           .sort((a, b) => b.marketCapBCH - a.marketCapBCH)
           .slice(0, 6);
-      
+
       default:
         return tokensWithProgress.slice(0, 6);
     }
@@ -166,12 +172,12 @@ export default function Home() {
 
   // King of the Hill - highest market cap
   const kingToken = useMemo(() => {
-    return [...mockTokens].sort((a, b) => b.marketCapBCH - a.marketCapBCH)[0];
-  }, []);
+    return [...allTokens].sort((a, b) => b.marketCapBCH - a.marketCapBCH)[0];
+  }, [allTokens]);
 
   // Stats
-  const graduatedCount = mockTokens.filter(t => t.isGraduated).length;
-  const graduatingCount = mockTokens.filter(t => {
+  const graduatedCount = allTokens.filter(t => t.isGraduated).length;
+  const graduatingCount = allTokens.filter(t => {
     const progress = (t.marketCapBCH / t.graduationTarget) * 100;
     return progress >= 50 && progress < 100 && !t.isGraduated;
   }).length;
@@ -212,7 +218,7 @@ export default function Home() {
               </FadeInSection>
             </div>
 
-            <div 
+            <div
               className="absolute top-0 right-0 w-1/3 h-full opacity-5 pointer-events-none"
               style={{
                 backgroundImage: "linear-gradient(#00FFA3 1px, transparent 1px), linear-gradient(90deg, #00FFA3 1px, transparent 1px)",
@@ -223,8 +229,8 @@ export default function Home() {
         </ParallaxSection>
 
         {/* Stats Bar */}
-        <TokenStats 
-          totalTokens={mockTokens.length}
+        <TokenStats
+          totalTokens={allTokens.length}
           graduatedCount={graduatedCount}
           graduatingCount={graduatingCount}
         />
@@ -250,9 +256,9 @@ export default function Home() {
               </div>
               <div className="flex gap-2">
                 {filters.map((filter) => (
-                  <FilterButton 
-                    key={filter} 
-                    filter={filter} 
+                  <FilterButton
+                    key={filter}
+                    filter={filter}
                     isActive={activeFilter === filter}
                     onClick={() => setActiveFilter(filter)}
                   />
@@ -273,7 +279,7 @@ export default function Home() {
                 href="/tokens"
                 className="inline-flex items-center gap-2 font-[family-name:var(--font-mono)] text-sm text-neon hover:text-text transition-colors border-b-2 border-neon hover:border-text pb-1"
               >
-                View All {mockTokens.length} Tokens
+                View All {allTokens.length} Tokens
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>

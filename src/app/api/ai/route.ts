@@ -13,7 +13,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const AURORA_MODEL = 'openrouter/aurora-alpha';
+const TEXT_MODELS = [
+    'deepseek/deepseek-r1-0528:free',
+    'nvidia/nemotron-nano-9b-v2:free',
+    'meta-llama/llama-3.3-70b-instruct:free',
+    'openrouter/free',
+];
 const FLUX_MODEL = 'black-forest-labs/flux.2-max';
 
 function getApiKey(): string | null {
@@ -63,19 +68,32 @@ export async function POST(request: NextRequest) {
                 ? `Generate ${count} catchy cryptocurrency token names and tickers based on the theme "${theme}". Format: "Name (TICKER) - Brief description". Make them fun, memorable, and suitable for memecoins.`
                 : `Generate ${count} catchy cryptocurrency token names and tickers. Format: "Name (TICKER) - Brief description". Make them fun, memorable, and suitable for memecoins.`;
 
-            const response = await callOpenRouter(AURORA_MODEL, [{ role: 'user', content: prompt }]);
+            // Try each model until one works
+            let lastError = '';
+            for (const model of TEXT_MODELS) {
+                try {
+                    const response = await callOpenRouter(model, [{ role: 'user', content: prompt }]);
 
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                return NextResponse.json(
-                    { success: false, error: error?.error?.message || `OpenRouter error: ${response.status}` },
-                    { status: response.status },
-                );
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => ({}));
+                        lastError = error?.error?.message || `OpenRouter error ${response.status} with model ${model}`;
+                        console.warn(`AI suggestions: model ${model} failed:`, lastError);
+                        continue; // try next model
+                    }
+
+                    const data = await response.json();
+                    const text = data.choices?.[0]?.message?.content;
+                    return NextResponse.json({ success: true, text: text || 'No suggestions generated' });
+                } catch (err: any) {
+                    lastError = err.message;
+                    console.warn(`AI suggestions: model ${model} threw:`, err.message);
+                    continue;
+                }
             }
-
-            const data = await response.json();
-            const text = data.choices?.[0]?.message?.content;
-            return NextResponse.json({ success: true, text: text || 'No suggestions generated' });
+            return NextResponse.json(
+                { success: false, error: `All models failed. Last error: ${lastError}` },
+                { status: 502 },
+            );
         }
 
         // ── Token description ──────────────────────────────────────────────────
@@ -89,19 +107,32 @@ export async function POST(request: NextRequest) {
                 ? `Write a catchy, fun description for a cryptocurrency token called "${name}" (${ticker}) with theme "${theme}". Keep it under 200 characters, make it engaging and suitable for a memecoin. Use emojis if appropriate.`
                 : `Write a catchy, fun description for a cryptocurrency token called "${name}" (${ticker}). Keep it under 200 characters, make it engaging and suitable for a memecoin. Use emojis if appropriate.`;
 
-            const response = await callOpenRouter(AURORA_MODEL, [{ role: 'user', content: prompt }]);
+            // Try each model until one works
+            let lastError = '';
+            for (const model of TEXT_MODELS) {
+                try {
+                    const response = await callOpenRouter(model, [{ role: 'user', content: prompt }]);
 
-            if (!response.ok) {
-                const error = await response.json().catch(() => ({}));
-                return NextResponse.json(
-                    { success: false, error: error?.error?.message || `OpenRouter error: ${response.status}` },
-                    { status: response.status },
-                );
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => ({}));
+                        lastError = error?.error?.message || `OpenRouter error ${response.status} with model ${model}`;
+                        console.warn(`AI description: model ${model} failed:`, lastError);
+                        continue;
+                    }
+
+                    const data = await response.json();
+                    const text = data.choices?.[0]?.message?.content;
+                    return NextResponse.json({ success: true, text: text || 'No description generated' });
+                } catch (err: any) {
+                    lastError = err.message;
+                    console.warn(`AI description: model ${model} threw:`, err.message);
+                    continue;
+                }
             }
-
-            const data = await response.json();
-            const text = data.choices?.[0]?.message?.content;
-            return NextResponse.json({ success: true, text: text || 'No description generated' });
+            return NextResponse.json(
+                { success: false, error: `All models failed. Last error: ${lastError}` },
+                { status: 502 },
+            );
         }
 
         // ── Token image generation ─────────────────────────────────────────────
