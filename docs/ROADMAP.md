@@ -1,4 +1,4 @@
-# IgniteBCH - Post-Sprint Development Roadmap
+# IITEBCH - Post-Sprint Development Roadmap
 
 ## Post-Hackathon Development Plan
 
@@ -192,10 +192,10 @@ POST /api/v1/trade/sell          # Sell tokens
 
 **Packages:**
 ```javascript
-// @ignitebch/sdk
-import { IgniteBCH } from '@ignitebch/sdk';
+// @IITEBCH/sdk
+import { IITEBCH } from '@IITEBCH/sdk';
 
-const client = new IgniteBCH({
+const client = new IITEBCH({
   network: 'mainnet',
   apiKey: 'your_key'
 });
@@ -435,9 +435,9 @@ const tx = await client.buy({
 ### Open Source Strategy
 
 **Repositories:**
-- `ignitebch/frontend` - MIT License
-- `ignitebch/contracts` - MIT License
-- `ignitebch/sdk` - MIT License
+- `IITEBCH/frontend` - MIT License
+- `IITEBCH/contracts` - MIT License
+- `IITEBCH/sdk` - MIT License
 
 **Contributions:**
 - Bug bounties
@@ -448,7 +448,7 @@ const tx = await client.buy({
 
 ## 📝 Conclusion
 
-IgniteBCH has a clear roadmap to become the leading fair launch token platform on Bitcoin Cash. With focus on:
+IITEBCH has a clear roadmap to become the leading fair launch token platform on Bitcoin Cash. With focus on:
 
 1. **Production readiness** in Q1
 2. **Feature expansion** in Q2
