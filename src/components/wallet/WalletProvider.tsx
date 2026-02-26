@@ -43,7 +43,7 @@ declare global {
 }
 
 const WalletContext = createContext<WalletContextType | null>(null);
-const STORAGE_KEY = 'ignitebch_wallet';
+const STORAGE_KEY = 'IITEBCH_wallet';
 
 export function useWallet() {
   const context = useContext(WalletContext);
