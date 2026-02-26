@@ -1,5 +1,5 @@
 /**
- * IgniteBCH — BCH Payment URI Helpers
+ * IITEBCH — BCH Payment URI Helpers
  *
  * Generates BIP-21 compatible URIs for BCH payments.
  * Used to open Cashonize / Paytaca with pre-filled payment details.
