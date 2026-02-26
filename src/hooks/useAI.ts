@@ -1,8 +1,19 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { generateTokenImage, ImageGenerateResult } from '@/lib/ai/image-generation';
-import { generateTokenNameSuggestions, generateTokenDescription } from '@/lib/ai/openrouter';
+
+interface ImageGenerateResult {
+  success: boolean;
+  imageUrl?: string;
+  modelUsed?: string;
+  error?: string;
+}
+
+interface TextGenerateResult {
+  success: boolean;
+  text?: string;
+  error?: string;
+}
 
 interface UseAIImageReturn {
   generate: (name: string, ticker: string, description: string) => Promise<ImageGenerateResult>;
@@ -30,9 +41,23 @@ export function useAIImage(): UseAIImageReturn {
 
     try {
       setProgress(30);
-      const generateResult = await generateTokenImage(name, ticker, description);
-      
+
+      const res = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'image', name, ticker, description }),
+      });
+
+      const data = await res.json();
       setProgress(100);
+
+      const generateResult: ImageGenerateResult = {
+        success: data.success,
+        imageUrl: data.imageUrl,
+        modelUsed: 'FLUX.2 Max',
+        error: data.error,
+      };
+
       setResult(generateResult);
 
       if (!generateResult.success) {
@@ -60,5 +85,59 @@ export function useAIImage(): UseAIImageReturn {
   };
 }
 
-// Re-export text generation functions
-export { generateTokenNameSuggestions, generateTokenDescription };
+/**
+ * Generate token name suggestions via server API route.
+ */
+export async function generateTokenNameSuggestions(
+  theme?: string,
+  count: number = 5
+): Promise<TextGenerateResult> {
+  try {
+    const res = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'suggestions', theme, count }),
+    });
+
+    const data = await res.json();
+    return {
+      success: data.success,
+      text: data.text,
+      error: data.error,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || 'Failed to generate suggestions',
+    };
+  }
+}
+
+/**
+ * Generate token description via server API route.
+ */
+export async function generateTokenDescription(
+  name: string,
+  ticker: string,
+  theme?: string
+): Promise<TextGenerateResult> {
+  try {
+    const res = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'description', name, ticker, theme }),
+    });
+
+    const data = await res.json();
+    return {
+      success: data.success,
+      text: data.text,
+      error: data.error,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || 'Failed to generate description',
+    };
+  }
+}
