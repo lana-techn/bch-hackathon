@@ -130,36 +130,43 @@ export default function CreateToken() {
       creatorAddress: wallet?.cashAddress || '',
     });
 
-    if (result.success && result.tokenId) {
-      // Save to localStorage so /token/[id] can find it
-      const newToken: Token = {
-        id: result.tokenId,
-        name,
-        ticker,
-        image: imagePreview || '/tokens/default-token.svg',
-        description,
-        creatorAddress: wallet?.cashAddress || '',
-        createdAt: new Date().toISOString(),
-        totalSupply: 1_000_000_000,
-        currentSupply: 0,
-        marketCapBCH: 0,
-        priceBCH: 0.000000001,
-        priceUSD: 0.0000003,
-        change24h: 0,
-        volume24hBCH: 0,
-        graduationTarget: 40,
-        isGraduated: false,
-        holders: 1,
-        txCount: 1,
-        contractAddress: result.bondingCurveAddress,
-        contractTokenAddress: result.tokenAddress,
-        category: 'other',
-      };
-      saveLaunchedToken(newToken);
+    console.log('[LAUNCH] deployToken result:', JSON.stringify(result, null, 2));
 
+    // Generate a reliable token ID even if the API doesn't return one
+    const tokenId = result.tokenId || result.genesisTxid || crypto.randomUUID();
+    console.log('[LAUNCH] Using tokenId:', tokenId, 'success:', result.success);
+
+    // Always save the token to localStorage (even on failure, so user can find it)
+    const newToken: Token = {
+      id: tokenId,
+      name,
+      ticker,
+      image: imagePreview || '/tokens/default-token.svg',
+      description,
+      creatorAddress: wallet?.cashAddress || '',
+      createdAt: new Date().toISOString(),
+      totalSupply: 1_000_000_000,
+      currentSupply: 0,
+      marketCapBCH: 0,
+      priceBCH: 0.000000001,
+      priceUSD: 0.0000003,
+      change24h: 0,
+      volume24hBCH: 0,
+      graduationTarget: 40,
+      isGraduated: false,
+      holders: 1,
+      txCount: 1,
+      contractAddress: result.bondingCurveAddress,
+      contractTokenAddress: result.tokenAddress,
+      category: 'other',
+    };
+    saveLaunchedToken(newToken);
+    console.log('[LAUNCH] Token saved to localStorage:', newToken.id, newToken.name);
+
+    if (result.success) {
       // Redirect to token page after 2 seconds
       setTimeout(() => {
-        router.push(`/token/${result.tokenId}`);
+        router.push(`/token/${tokenId}`);
       }, 2000);
     }
   };
