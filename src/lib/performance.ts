@@ -1,5 +1,5 @@
 /**
- * Performance utilities for IgniteBCH
+ * Performance utilities for IITEBCH
  */
 
 import { useMemo, ReactNode } from 'react';
