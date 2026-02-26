@@ -18,7 +18,7 @@ export async function generateTokenImage(
 ): Promise<ImageGenerateResult> {
   // Try DALL-E first
   const openaiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
-  
+
   if (openaiKey) {
     try {
       console.log('Trying DALL-E 3...');
@@ -30,10 +30,10 @@ export async function generateTokenImage(
       console.log('DALL-E failed:', error.message);
     }
   }
-  
+
   // Fallback to FLUX
   const openrouterKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
-  
+
   if (openrouterKey) {
     try {
       console.log('Falling back to FLUX...');
@@ -45,7 +45,7 @@ export async function generateTokenImage(
       console.log('FLUX failed:', error.message);
     }
   }
-  
+
   return {
     success: false,
     error: 'All image generation services failed. Please check your API keys or try manual upload.',
@@ -82,16 +82,16 @@ async function generateWithDalle(
   if (!response.ok) {
     const error = await response.json();
     const errorMessage = error.error?.message || 'DALL-E request failed';
-    
+
     if (errorMessage.includes('insufficient_quota') || errorMessage.includes('billing')) {
       throw new Error('DALL-E billing issue: ' + errorMessage);
     }
-    
+
     throw new Error(errorMessage);
   }
 
   const data = await response.json();
-  
+
   if (data.data?.[0]?.url) {
     return {
       success: true,
@@ -118,8 +118,8 @@ async function generateWithFlux(
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${apiKey}`,
-      'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://ignitebch.app',
-      'X-Title': 'IgniteBCH Token Generator',
+      'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://IITEBCH.app',
+      'X-Title': 'IITEBCH Token Generator',
     },
     body: JSON.stringify({
       model: FLUX_MODEL,
@@ -131,26 +131,26 @@ async function generateWithFlux(
   if (!response.ok) {
     const error = await response.json();
     const errorMessage = error.error?.message || 'FLUX request failed';
-    
+
     if (errorMessage.includes('Insufficient credits')) {
       throw new Error('FLUX: Insufficient credits');
     }
-    
+
     throw new Error(errorMessage);
   }
 
   const data = await response.json();
-  
+
   // Extract image from FLUX response
   const choice = data.choices?.[0];
-  
+
   if (choice?.message?.images?.[0]?.image_url?.url) {
     return {
       success: true,
       imageUrl: choice.message.images[0].image_url.url,
     };
   }
-  
+
   if (choice?.message?.image_url?.url) {
     return {
       success: true,
@@ -184,14 +184,14 @@ The logo should be eye-catching, memorable, and represent the fun/memetic nature
 /**
  * Check which AI services are available
  */
-export function getAvailableAIServices(): { 
-  dalle: boolean; 
-  flux: boolean; 
+export function getAvailableAIServices(): {
+  dalle: boolean;
+  flux: boolean;
   primary: string;
 } {
   const dalle = !!process.env.NEXT_PUBLIC_OPENAI_API_KEY;
   const flux = !!process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
-  
+
   return {
     dalle,
     flux,
@@ -204,7 +204,7 @@ export function getAvailableAIServices(): {
  */
 export function getModelInfo() {
   const services = getAvailableAIServices();
-  
+
   return {
     image: {
       name: services.primary,
