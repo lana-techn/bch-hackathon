@@ -13,7 +13,7 @@ const gun = Gun({
   radisk: true,
 });
 
-const tokensNode = gun.get('ignitebch_tokens');
+const tokensNode = gun.get('IITEBCH_tokens');
 
 export async function saveTokenMetadata(token) {
   return new Promise((resolve, reject) => {
