@@ -4,10 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAIImage, generateTokenNameSuggestions, generateTokenDescription } from '@/hooks/useAI';
-import { getAvailableAIServices, getModelInfo } from '@/lib/ai/image-generation';
 import { useTokenDeployment } from '@/hooks/useTokenDeployment';
 import { DeploymentProgress } from '@/components/deployment/DeploymentProgress';
 import { useWallet } from '@/components/wallet';
+import { saveLaunchedToken } from '@/lib/launched-tokens';
+import type { Token } from '@/types';
 
 export default function CreateToken() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function CreateToken() {
   const [showNameSuggestions, setShowNameSuggestions] = useState(false);
   const [theme, setTheme] = useState('');
   const [showDeploymentProgress, setShowDeploymentProgress] = useState(false);
-  
+
   const {
     generate: generateImage,
     isGenerating: isGeneratingImage,
@@ -42,7 +43,7 @@ export default function CreateToken() {
   } = useTokenDeployment();
 
   const isValid = name.trim().length > 0 && ticker.trim().length > 0 && isConnected;
-  const modelInfo = getModelInfo();
+  const modelInfo = { image: { name: 'FLUX.2 Max', cost: 'FREE' } };
 
   const handleGenerateImage = async () => {
     if (!name || !ticker) {
@@ -51,7 +52,7 @@ export default function CreateToken() {
     }
 
     const result = await generateImage(name, ticker, description);
-    
+
     if (result.success && result.imageUrl) {
       setGeneratedImageUrl(result.imageUrl);
       setImagePreview(result.imageUrl);
@@ -117,9 +118,9 @@ export default function CreateToken() {
 
   const handleLaunch = async () => {
     if (!isValid) return;
-    
+
     setShowDeploymentProgress(true);
-    
+
     const result = await deployToken({
       name,
       ticker,
@@ -130,6 +131,32 @@ export default function CreateToken() {
     });
 
     if (result.success && result.tokenId) {
+      // Save to localStorage so /token/[id] can find it
+      const newToken: Token = {
+        id: result.tokenId,
+        name,
+        ticker,
+        image: imagePreview || '/tokens/default-token.svg',
+        description,
+        creatorAddress: wallet?.cashAddress || '',
+        createdAt: new Date().toISOString(),
+        totalSupply: 1_000_000_000,
+        currentSupply: 0,
+        marketCapBCH: 0,
+        priceBCH: 0.000000001,
+        priceUSD: 0.0000003,
+        change24h: 0,
+        volume24hBCH: 0,
+        graduationTarget: 40,
+        isGraduated: false,
+        holders: 1,
+        txCount: 1,
+        contractAddress: result.bondingCurveAddress,
+        contractTokenAddress: result.tokenAddress,
+        category: 'other',
+      };
+      saveLaunchedToken(newToken);
+
       // Redirect to token page after 2 seconds
       setTimeout(() => {
         router.push(`/token/${result.tokenId}`);
@@ -164,7 +191,7 @@ export default function CreateToken() {
             Deploy a CashToken with bonding curve pricing in under 2 seconds.
             No presale. No team allocation. Fair launch guaranteed.
           </p>
-          
+
           {/* AI Badge */}
           <div className="mt-4 inline-flex items-center gap-2 bg-neon/10 border border-neon px-3 py-1">
             <span className="text-xs font-mono text-neon">🤖 AI-Powered</span>
@@ -257,19 +284,10 @@ export default function CreateToken() {
               </div>
 
               {(() => {
-                const services = getAvailableAIServices();
-                if (!services.dalle && !services.flux) {
-                  return (
-                    <div className="bg-panic-red/10 border border-panic-red p-3 mb-4">
-                      <p className="text-panic-red text-sm font-mono">
-                        ⚠️ No AI service configured. Add NEXT_PUBLIC_OPENAI_API_KEY or NEXT_PUBLIC_OPENROUTER_API_KEY to .env.local
-                      </p>
-                    </div>
-                  );
-                }
+                // API key check is now server-side via /api/ai route
                 return null;
               })()}
-              
+
               {imageError && imageError.includes('Insufficient credits') && (
                 <div className="bg-warn/10 border border-warn p-3 mb-4">
                   <p className="text-warn text-sm font-mono mb-2">
@@ -278,9 +296,9 @@ export default function CreateToken() {
                   <p className="text-text-dim text-xs font-mono">
                     You need to add credits to your OpenRouter account.
                   </p>
-                  <a 
-                    href="https://openrouter.ai/settings/credits" 
-                    target="_blank" 
+                  <a
+                    href="https://openrouter.ai/settings/credits"
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-neon text-xs font-mono hover:underline mt-2 inline-block"
                   >
@@ -347,11 +365,10 @@ export default function CreateToken() {
               <button
                 onClick={handleGenerateImage}
                 disabled={isGeneratingImage || !name || !ticker}
-                className={`w-full brutal-btn font-bold py-3 border-2 transition-colors ${
-                  isGeneratingImage || !name || !ticker
-                    ? 'bg-border text-text-dim border-border cursor-not-allowed'
-                    : 'bg-warn text-void border-warn hover:bg-warn/90'
-                }`}
+                className={`w-full brutal-btn font-bold py-3 border-2 transition-colors ${isGeneratingImage || !name || !ticker
+                  ? 'bg-border text-text-dim border-border cursor-not-allowed'
+                  : 'bg-warn text-void border-warn hover:bg-warn/90'
+                  }`}
               >
                 {isGeneratingImage ? 'Generating...' : `Generate with ${modelInfo.image.name} (FREE)`}
               </button>
@@ -363,16 +380,16 @@ export default function CreateToken() {
           </div>
         )}
 
-      {/* Deployment Progress Modal */}
-      {showDeploymentProgress && (
-        <DeploymentProgress 
-          status={deploymentStatus} 
-          onClose={handleCloseDeployment}
-        />
-      )}
+        {/* Deployment Progress Modal */}
+        {showDeploymentProgress && (
+          <DeploymentProgress
+            status={deploymentStatus}
+            onClose={handleCloseDeployment}
+          />
+        )}
 
-      {/* Form */}
-      <div className="bg-card border-3 border-border brutal-shadow p-6 space-y-6">
+        {/* Form */}
+        <div className="bg-card border-3 border-border brutal-shadow p-6 space-y-6">
           {/* Token Image */}
           <div>
             <label className="font-[family-name:var(--font-heading)] text-sm uppercase text-text-dim block mb-2">
@@ -551,19 +568,18 @@ export default function CreateToken() {
           <button
             onClick={handleLaunch}
             disabled={!isValid || deploymentStatus.step !== 'idle'}
-            className={`w-full py-4 font-[family-name:var(--font-heading)] text-base font-bold uppercase tracking-wider brutal-btn border-3 transition-all ${
-              isValid && deploymentStatus.step === 'idle'
-                ? 'bg-neon text-void border-neon hover:bg-neon/90 cursor-pointer'
-                : 'bg-border text-text-dim border-border cursor-not-allowed'
-            }`}
+            className={`w-full py-4 font-[family-name:var(--font-heading)] text-base font-bold uppercase tracking-wider brutal-btn border-3 transition-all ${isValid && deploymentStatus.step === 'idle'
+              ? 'bg-neon text-void border-neon hover:bg-neon/90 cursor-pointer'
+              : 'bg-border text-text-dim border-border cursor-not-allowed'
+              }`}
           >
-            {!isConnected 
+            {!isConnected
               ? 'Connect Wallet to Launch'
               : !isValid
-              ? 'Fill Required Fields'
-              : deploymentStatus.step !== 'idle'
-              ? 'Launching...'
-              : `Launch $${ticker || 'TOKEN'} Now`
+                ? 'Fill Required Fields'
+                : deploymentStatus.step !== 'idle'
+                  ? 'Launching...'
+                  : `Launch $${ticker || 'TOKEN'} Now`
             }
           </button>
         </div>
