@@ -1,4 +1,4 @@
-# IgniteBCH 🚀
+# IITEBCH 🚀
 
 <p align="center">
   <strong>Fair Launch Token Platform on Bitcoin Cash</strong>
@@ -18,15 +18,15 @@
 
 ---
 
-## 🎯 What is IgniteBCH?
+## 🎯 What is IITEBCH?
 
-IgniteBCH is a fair launch platform for tokens on Bitcoin Cash. Anyone can create a token in 30 seconds with one click, and traders can buy/sell with guaranteed liquidity through bonding curves.
+IITEBCH is a fair launch platform for tokens on Bitcoin Cash. Anyone can create a token in 30 seconds with one click, and traders can buy/sell with guaranteed liquidity through bonding curves.
 
 **Think of it as pump.fun for Bitcoin Cash — but with 100x lower fees and built-in social features.**
 
 ### Problems Solved
 
-| Problem | IgniteBCH Solution |
+| Problem | IITEBCH Solution |
 |---------|-------------------|
 | 🚫 Expensive launch ($500-5000 on Ethereum) | ✅ $1.50 per launch |
 | 🚫 Developers pre-mine & dump | ✅ Fair launch, no pre-mine |
@@ -220,7 +220,7 @@ Market Cap reaches 40 BCH
 
 ```
 Token ID: 4703183609b7b037881c800e80f46857215af3945e41e7727499d1f74b370056
-Name: IgniteBCH Token
+Name: IITEBCH Token
 Ticker: OCK
 Network: Chipnet (testnet)
 ```

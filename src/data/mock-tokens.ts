@@ -6,7 +6,7 @@ export const mockTokens: Token[] = [
     name: "TestToken",
     ticker: "TEST",
     image: "/tokens/default-token.svg",
-    description: "First real bonding curve token deployed on chipnet testnet. Created for testing the IgniteBCH protocol.",
+    description: "First real bonding curve token deployed on chipnet testnet. Created for testing the IITEBCH protocol.",
     creatorAddress: "bchtest:qqttvxd9g5yw23q5leregzu5v8vkqajtcsc0klq8fa",
     createdAt: "2026-02-11T12:30:00Z",
     totalSupply: 1_000_000_000,

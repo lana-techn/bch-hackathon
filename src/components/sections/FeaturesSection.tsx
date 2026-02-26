@@ -92,7 +92,7 @@ function FeatureCard({ feature }: { feature: typeof features[0] }) {
     >
       {/* Background Glow */}
       <div className="absolute inset-0 bg-gradient-to-br from-neon/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      
+
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col">
         {/* Top Row: Icon + Subtitle */}
@@ -151,7 +151,7 @@ export function FeaturesSection() {
           backgroundSize: '40px 40px',
         }}
       />
-      
+
       <div className="max-w-7xl mx-auto px-4 md:px-8 relative">
         {/* Header */}
         <FadeInSection>
@@ -160,7 +160,7 @@ export function FeaturesSection() {
               Core Features
             </span>
             <h2 className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl font-bold uppercase text-text mb-4">
-              Why Choose <span className="text-neon">IgniteBCH</span>
+              Why Choose <span className="text-neon">IITEBCH</span>
             </h2>
             <p className="text-text-dim text-lg max-w-2xl mx-auto">
               Built for fairness, secured by Bitcoin Cash
@@ -178,7 +178,7 @@ export function FeaturesSection() {
               </StaggerItem>
             ))}
           </div>
-          
+
           {/* Row 2: 3 Other Features (Small cards) */}
           <div className="grid grid-cols-3 gap-4">
             {otherFeatures.map((feature) => (

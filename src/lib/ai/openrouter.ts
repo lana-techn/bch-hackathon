@@ -24,7 +24,7 @@ export async function generateTokenImageWithFlux(
 ): Promise<ImageGenerateResult> {
   try {
     const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
-    
+
     if (!apiKey) {
       return {
         success: false,
@@ -39,8 +39,8 @@ export async function generateTokenImageWithFlux(
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://ignitebch.app',
-        'X-Title': 'IgniteBCH Token Generator',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://IITEBCH.app',
+        'X-Title': 'IITEBCH Token Generator',
       },
       body: JSON.stringify({
         model: FLUX_MODEL,
@@ -57,23 +57,23 @@ export async function generateTokenImageWithFlux(
     if (!response.ok) {
       const error = await response.json();
       const errorMessage = error.error?.message || 'Failed to generate image';
-      
+
       // Check for specific error types
       if (errorMessage.includes('Insufficient credits')) {
         throw new Error(
           'Insufficient OpenRouter credits. Please add credits at https://openrouter.ai/settings/credits or use a different API key. '
         );
       }
-      
+
       throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    
+
     // Extract image from response
     const choice = data.choices?.[0];
     const message = choice?.message;
-    
+
     // Format 1: OpenRouter FLUX - images array
     if (message?.images && Array.isArray(message.images) && message.images.length > 0) {
       const firstImage = message.images[0];
@@ -84,7 +84,7 @@ export async function generateTokenImageWithFlux(
         };
       }
     }
-    
+
     // Format 2: Direct image_url in message
     if (message?.image_url?.url) {
       return {
@@ -92,10 +92,10 @@ export async function generateTokenImageWithFlux(
         imageUrl: message.image_url.url,
       };
     }
-    
+
     // Format 3: Array with image_url objects in content
     if (message?.content && Array.isArray(message.content)) {
-      const imageContent = message.content.find((c: any) => 
+      const imageContent = message.content.find((c: any) =>
         c.type === 'image_url' || c.image_url
       );
       if (imageContent?.image_url?.url) {
@@ -105,7 +105,7 @@ export async function generateTokenImageWithFlux(
         };
       }
     }
-    
+
     // Format 4: String content with URL
     if (typeof message?.content === 'string' && message.content.length > 100) {
       return {
@@ -133,7 +133,7 @@ export async function generateTokenNameSuggestions(
 ): Promise<TextGenerateResult> {
   try {
     const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
-    
+
     if (!apiKey) {
       return {
         success: false,
@@ -141,7 +141,7 @@ export async function generateTokenNameSuggestions(
       };
     }
 
-    const prompt = theme 
+    const prompt = theme
       ? `Generate ${count} catchy cryptocurrency token names and tickers based on the theme "${theme}". Format: "Name (TICKER) - Brief description". Make them fun, memorable, and suitable for memecoins.`
       : `Generate ${count} catchy cryptocurrency token names and tickers. Format: "Name (TICKER) - Brief description". Make them fun, memorable, and suitable for memecoins.`;
 
@@ -150,8 +150,8 @@ export async function generateTokenNameSuggestions(
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://ignitebch.app',
-        'X-Title': 'IgniteBCH Token Generator',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://IITEBCH.app',
+        'X-Title': 'IITEBCH Token Generator',
       },
       body: JSON.stringify({
         model: AURORA_MODEL,
@@ -195,7 +195,7 @@ export async function generateTokenDescription(
 ): Promise<TextGenerateResult> {
   try {
     const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY;
-    
+
     if (!apiKey) {
       return {
         success: false,
@@ -212,8 +212,8 @@ export async function generateTokenDescription(
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
-        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://ignitebch.app',
-        'X-Title': 'IgniteBCH Token Generator',
+        'HTTP-Referer': typeof window !== 'undefined' ? window.location.origin : 'https://IITEBCH.app',
+        'X-Title': 'IITEBCH Token Generator',
       },
       body: JSON.stringify({
         model: AURORA_MODEL,

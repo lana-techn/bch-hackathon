@@ -1,4 +1,4 @@
-# IgniteBCH - Demo Script & Flow
+# IITEBCH - Demo Script & Flow
 
 ## Demo Overview
 **Duration:** 5-7 minutes  
@@ -8,11 +8,11 @@
 
 ## ✅ WORKING DEMO (Verified 2026-02-23)
 
-### Deployed Token - OCK (IgniteBCH Token)
+### Deployed Token - OCK (IITEBCH Token)
 | Field | Value |
 |-------|-------|
 | **Token ID** | `4703183609b7b037881c800e80f46857215af3945e41e7727499d1f74b370056` |
-| **Name** | IgniteBCH Token |
+| **Name** | IITEBCH Token |
 | **Ticker** | OCK |
 | **Network** | Chipnet (testnet) |
 
@@ -64,11 +64,11 @@
 ### **Part 1: Introduction (30 seconds)**
 
 **Script:**
-> "Hi everyone! Today I'm showing you IgniteBCH - the fairest way to launch tokens on Bitcoin Cash.
+> "Hi everyone! Today I'm showing you IITEBCH - the fairest way to launch tokens on Bitcoin Cash.
 >
 > The problem with most token launches? They're expensive, unfair, and risky. Ethereum costs $500+ in gas fees. Developers pre-mine and dump on retail. 90% are rug pulls.
 >
-> IgniteBCH solves this with three innovations:
+> IITEBCH solves this with three innovations:
 > 1. **Bonding curves** - guaranteed liquidity, no slippage
 > 2. **Locked liquidity** - no rug pulls possible
 > 3. **$1.50 launch cost** - 100x cheaper than Ethereum
@@ -241,7 +241,7 @@
 3. Like the token
 
 **Script:**
-> "IgniteBCH isn't just trading - it's social.
+> "IITEBCH isn't just trading - it's social.
 >
 > [Scroll to comments]
 > Every token has a live comment stream. This runs on Gun.js - a decentralized P2P database. No central server.
@@ -277,7 +277,7 @@
 > - The token lists on the open market
 > - Price discovery continues beyond the bonding curve
 >
-> This means successful tokens aren't stuck on IgniteBCH forever. They graduate to the wider DeFi ecosystem.
+> This means successful tokens aren't stuck on IITEBCH forever. They graduate to the wider DeFi ecosystem.
 >
 > And because liquidity is locked in the smart contract, rug pulls are impossible. The creator can't withdraw funds."
 
@@ -286,7 +286,7 @@
 ### **Part 7: Closing (30 seconds)**
 
 **Script:**
-> "So that's IgniteBCH:
+> "So that's IITEBCH:
 >
 > ✅ Create tokens in 30 seconds with AI
 > ✅ Trade with guaranteed liquidity
@@ -414,11 +414,11 @@
 ## Demo Assets
 
 ### Links to Share:
-- **Live App:** https://ignitebch.app (or localhost:3000)
-- **GitHub:** https://github.com/yourusername/ignitebch
-- **Docs:** https://docs.ignitebch.app
-- **Twitter:** @IgniteBCH
-- **Discord:** discord.gg/ignitebch
+- **Live App:** https://IITEBCH.app (or localhost:3000)
+- **GitHub:** https://github.com/yourusername/IITEBCH
+- **Docs:** https://docs.IITEBCH.app
+- **Twitter:** @IITEBCH
+- **Discord:** discord.gg/IITEBCH
 
 ### Demo Tokens to Create:
 1. **RocketCat (RCAT)** - "Purr-fect crypto that rockets to the moon! 🚀🐱"

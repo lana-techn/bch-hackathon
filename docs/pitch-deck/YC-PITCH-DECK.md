@@ -1,8 +1,8 @@
-# IgniteBCH - YC Pitch Deck
+# IITEBCH - YC Pitch Deck
 
 ## What it does
 
-**IgniteBCH is a fair launch platform for tokens on Bitcoin Cash. Anyone can create a token in 30 seconds with one click, and traders can buy/sell with guaranteed liquidity via bonding curves.**
+**IITEBCH is a fair launch platform for tokens on Bitcoin Cash. Anyone can create a token in 30 seconds with one click, and traders can buy/sell with guaranteed liquidity via bonding curves.**
 
 Think of it as pump.fun for Bitcoin Cash — but with 100x lower fees and built-in social features.
 
@@ -118,7 +118,7 @@ Think of it as pump.fun for Bitcoin Cash — but with 100x lower fees and built-
 | pump.fun | Solana | $0.01 | ✅ | ❌ |
 | Uniswap | Ethereum | $5-50 | ❌ | ❌ |
 | Raydium | Solana | $0.01 | ❌ | ❌ |
-| **IgniteBCH** | **BCH** | **$0.0001** | **✅** | **✅** |
+| **IITEBCH** | **BCH** | **$0.0001** | **✅** | **✅** |
 
 **Our advantages:**
 1. 100x cheaper than Ethereum
@@ -163,8 +163,8 @@ Think of it as pump.fun for Bitcoin Cash — but with 100x lower fees and built-
 
 ## Contact
 
-**Email:** hello@ignitebch.app
-**Website:** https://ignitebch.app
-**Twitter:** @IgniteBCH
+**Email:** hello@IITEBCH.app
+**Website:** https://IITEBCH.app
+**Twitter:** @IITEBCH
 
 **Ready to ignite.** 🚀

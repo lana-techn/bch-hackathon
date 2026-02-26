@@ -46,7 +46,7 @@ export function HowItWorksSection() {
   return (
     <section className="py-20 md:py-32 bg-card border-y-3 border-border relative overflow-hidden">
       {/* Background Grid */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.02]"
         style={{
           backgroundImage: 'linear-gradient(#00FFA3 1px, transparent 1px), linear-gradient(90deg, #00FFA3 1px, transparent 1px)',
@@ -61,10 +61,10 @@ export function HowItWorksSection() {
               Technical Process
             </span>
             <h2 className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl font-bold uppercase text-text mb-4">
-              How IgniteBCH <span className="text-neon">Works</span>
+              How IITEBCH <span className="text-neon">Works</span>
             </h2>
             <p className="text-text-dim text-lg max-w-2xl mx-auto">
-              Fair launch protocol powered by Bitcoin Cash smart contracts. 
+              Fair launch protocol powered by Bitcoin Cash smart contracts.
               Transparent, secure, and fully decentralized.
             </p>
           </div>
@@ -73,11 +73,11 @@ export function HowItWorksSection() {
         <StaggerContainer className="relative" staggerDelay={0.2}>
           {/* Connection Line */}
           <div className="absolute top-[60px] left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-neon to-transparent hidden md:block z-0 opacity-30" />
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
             {steps.map((step, index) => (
               <StaggerItem key={index}>
-                <m.div 
+                <m.div
                   className="bg-void border-3 border-border p-8 h-full group hover:border-neon transition-all duration-300"
                   whileHover={{ y: -8 }}
                   transition={{ duration: 0.3 }}

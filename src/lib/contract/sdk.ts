@@ -1,5 +1,5 @@
 /**
- * IgniteBCH - Contract SDK (Server-side only)
+ * IITEBCH - Contract SDK (Server-side only)
  *
  * TypeScript interaction layer for the CashScript smart contracts.
  * Handles contract instantiation, quote generation, state parsing,
@@ -579,11 +579,52 @@ export function toTokenAddress(address: string, network: NetworkType): string {
 }
 
 /**
+ * Normalize a BCH CashAddress by ensuring it has the correct prefix.
+ * Handles addresses provided without a prefix (e.g. from Cashonize wallet).
+ */
+export function normalizeAddress(address: string, network?: NetworkType): string {
+  if (!address) return address;
+
+  // Already has a valid prefix
+  if (address.startsWith('bitcoincash:') || address.startsWith('bchtest:')) {
+    return address;
+  }
+
+  // Determine network from env or parameter
+  const net = network || (process.env.NEXT_PUBLIC_NETWORK as NetworkType) || 'chipnet';
+  const prefix = net === 'mainnet' ? 'bitcoincash' : 'bchtest';
+
+  // Try with the prefix  
+  const withPrefix = `${prefix}:${address}`;
+  try {
+    const decoded = decodeCashAddress(withPrefix);
+    if (typeof decoded !== 'string') return withPrefix;
+  } catch {
+    // ignore
+  }
+
+  // Try the other prefix as fallback
+  const altPrefix = prefix === 'bchtest' ? 'bitcoincash' : 'bchtest';
+  const withAlt = `${altPrefix}:${address}`;
+  try {
+    const decoded = decodeCashAddress(withAlt);
+    if (typeof decoded !== 'string') return withAlt;
+  } catch {
+    // ignore
+  }
+
+  // Return original if nothing worked
+  return address;
+}
+
+/**
  * Verify if a string is a valid BCH cash address.
+ * Automatically normalizes addresses without prefix.
  */
 export function verifyAddress(address: string): boolean {
   try {
-    const decoded = decodeCashAddress(address);
+    const normalized = normalizeAddress(address);
+    const decoded = decodeCashAddress(normalized);
     return typeof decoded !== 'string';
   } catch {
     return false;

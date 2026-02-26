@@ -14,7 +14,7 @@ const pinata = new PinataSDK({
 
 async function testIPFS() {
   console.log('🧪 Testing IPFS upload...\n');
-  
+
   if (!process.env.NEXT_PUBLIC_PINATA_JWT) {
     console.error('❌ NEXT_PUBLIC_PINATA_JWT not set in .env.local!');
     console.log('\nPlease add:');
@@ -22,25 +22,25 @@ async function testIPFS() {
     console.log('NEXT_PUBLIC_PINATA_GATEWAY=your-gateway.mypinata.cloud');
     process.exit(1);
   }
-  
+
   console.log('✅ PINATA_JWT found');
   console.log('Gateway:', process.env.NEXT_PUBLIC_PINATA_GATEWAY);
-  
+
   try {
     // Create test file
-    const blob = new Blob(['Hello IgniteBCH!'], { type: 'text/plain' });
+    const blob = new Blob(['Hello IITEBCH!'], { type: 'text/plain' });
     const file = new File([blob], 'test.txt', { type: 'text/plain' });
-    
+
     console.log('\n📤 Uploading test file...');
     const upload = await pinata.upload.public.file(file);
-    
+
     console.log('\n✅ Upload successful!');
     console.log('CID:', upload.cid);
     console.log('Name:', upload.name);
     console.log('Size:', upload.size, 'bytes');
     console.log('Created:', upload.created_at);
     console.log('Gateway URL:', `https://${process.env.NEXT_PUBLIC_PINATA_GATEWAY}/ipfs/${upload.cid}`);
-    
+
     return true;
   } catch (error) {
     console.error('\n❌ Upload failed:', error.message);

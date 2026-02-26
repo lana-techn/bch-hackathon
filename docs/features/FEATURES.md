@@ -1,4 +1,4 @@
-# IgniteBCH - Feature Documentation
+# IITEBCH - Feature Documentation
 
 ## Complete Feature List
 
@@ -559,7 +559,7 @@ Step 4/4: Lock (100%)
 
 ## Feature Comparison Matrix
 
-| Feature | IgniteBCH | pump.fun | Uniswap | Raydium |
+| Feature | IITEBCH | pump.fun | Uniswap | Raydium |
 |---------|-----------|----------|---------|---------|
 | **Launch Fee** | $1.50 | $2 | $50-500 | $0.50 |
 | **Fair Launch** | ✅ | ✅ | ❌ | ❌ |
@@ -655,7 +655,7 @@ Step 4/4: Lock (100%)
 
 ## Summary
 
-**IgniteBCH combines:**
+**IITEBCH combines:**
 - ✅ Easy token creation (AI-powered)
 - ✅ Fair trading (bonding curve)
 - ✅ Social engagement (P2P)

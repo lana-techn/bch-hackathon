@@ -1,5 +1,5 @@
 /**
- * REAL CashTokens Deployment Service for IgniteBCH
+ * REAL CashTokens Deployment Service for IITEBCH
  * 
  * PROPER IMPLEMENTATION:
  * 1. Create Pre-Genesis transaction (creates vout 0 UTXO)
@@ -10,9 +10,9 @@
  * Key insight: Token category = txid of UTXO being spent at input index where vout=0
  */
 
-import { 
-  Contract, 
-  TransactionBuilder, 
+import {
+  Contract,
+  TransactionBuilder,
   ElectrumNetworkProvider,
   SignatureTemplate,
 } from 'cashscript';
@@ -102,14 +102,14 @@ export async function deployTokenCashTokens(
     const deployerPkHash = hash160(deployerPk);
 
     const prefix = config.network === 'mainnet' ? 'bitcoincash' : 'bchtest';
-    
+
     // Get deployer addresses
     const deployerAddressResult = encodeCashAddress({
       payload: deployerPkHash,
       prefix,
       type: CashAddressType.p2pkh,
     });
-    
+
     if (typeof deployerAddressResult === 'string') {
       throw new Error(`Failed to encode address: ${deployerAddressResult}`);
     }
@@ -120,7 +120,7 @@ export async function deployTokenCashTokens(
       prefix,
       type: CashAddressType.p2pkhWithTokens,
     });
-    
+
     if (typeof deployerTokenAddressResult === 'string') {
       throw new Error(`Failed to encode token address: ${deployerTokenAddressResult}`);
     }
@@ -228,7 +228,7 @@ export async function deployTokenCashTokens(
     });
 
     const genesisResult = await genesisBuilder.send();
-    
+
     // The token category is the pre-genesis txid
     const actualTokenCategory = tokenCategory;
 
@@ -261,7 +261,7 @@ export async function deployTokenCashTokens(
 
     let tokenUtxos = await provider.getUtxos(deployerTokenAddress);
     console.log(`[DEBUG] Found ${tokenUtxos.length} UTXOs after genesis`);
-    
+
     let fullSupplyUtxo = tokenUtxos.find(
       u => u.token?.category === actualTokenCategory && u.token?.amount === TOTAL_SUPPLY
     );
@@ -397,13 +397,13 @@ export async function checkDeploymentRequirements(
 ): Promise<{ canDeploy: boolean; balance: bigint; required: bigint; message: string }> {
   try {
     const provider = getProvider(network);
-    
+
     let fullAddress = address;
     if (!address.includes(':')) {
       const prefix = network === 'mainnet' ? 'bitcoincash' : 'bchtest';
       fullAddress = `${prefix}:${address}`;
     }
-    
+
     const utxos = await provider.getUtxos(fullAddress);
     const balance = utxos.reduce((sum, u) => sum + u.satoshis, 0n);
     const required = LAUNCH_FEE_SAT + 50000n;

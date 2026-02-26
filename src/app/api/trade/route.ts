@@ -9,6 +9,7 @@ import {
   getBuyQuote,
   getSellQuote,
   verifyAddress,
+  normalizeAddress,
   selectUtxos,
   toTokenAddress,
 } from '@/lib/contract/sdk';
@@ -145,7 +146,9 @@ export async function POST(request: NextRequest) {
       return errResp(id, new ValidationError('Missing buyerAddress', 'buyerAddress'));
     if (!tokensToBuy)
       return errResp(id, new ValidationError('Missing tokensToBuy', 'tokensToBuy'));
-    if (!verifyAddress(buyerAddress))
+    // Normalize address (handles wallets that omit prefix)
+    const normalizedBuyer = normalizeAddress(buyerAddress, network);
+    if (!verifyAddress(normalizedBuyer))
       return errResp(id, new ValidationError('Invalid buyer address format', 'buyerAddress'));
 
     let tokensToBuyBigInt: bigint;
@@ -179,7 +182,7 @@ export async function POST(request: NextRequest) {
           instance.contract.address,
           quote.totalSat,
           `Buy ${tokensToBuyBigInt} tokens`,
-          `IgniteBCH bonding curve buy`,
+          `IITEBCH bonding curve buy`,
         );
         return NextResponse.json({
           success: true,
@@ -201,7 +204,7 @@ export async function POST(request: NextRequest) {
       // Fetch buyer's UTXOs from the network
       let userUtxos;
       try {
-        userUtxos = await provider.getUtxos(buyerAddress);
+        userUtxos = await provider.getUtxos(normalizedBuyer);
       } catch (err) {
         throw new NetworkError('Failed to fetch wallet UTXOs', err);
       }
@@ -238,13 +241,13 @@ export async function POST(request: NextRequest) {
       }
 
       // Build the full transaction (server-side signing)
-      const buyerTokenAddress = toTokenAddress(buyerAddress, network);
+      const buyerTokenAddress = toTokenAddress(normalizedBuyer, network);
       const builder = await buildBuyTransaction(
         instance,
         tokensToBuyBigInt,
         userBchUtxos,
         buyerTokenAddress,  // token destination — must be token-capable address
-        buyerAddress,       // BCH change destination
+        normalizedBuyer,    // BCH change destination
         signer,
       );
 
@@ -280,7 +283,9 @@ export async function POST(request: NextRequest) {
       return errResp(id, new ValidationError('Missing sellerAddress', 'sellerAddress'));
     if (!tokensToSell)
       return errResp(id, new ValidationError('Missing tokensToSell', 'tokensToSell'));
-    if (!verifyAddress(sellerAddress))
+    // Normalize address (handles wallets that omit prefix)
+    const normalizedSeller = normalizeAddress(sellerAddress, network);
+    if (!verifyAddress(normalizedSeller))
       return errResp(id, new ValidationError('Invalid seller address format', 'sellerAddress'));
 
     let tokensToSellBigInt: bigint;
@@ -313,7 +318,7 @@ export async function POST(request: NextRequest) {
           instance.contract.address,
           546n, // dust — user sends tokens back to contract
           `Sell ${tokensToSellBigInt} tokens`,
-          `IgniteBCH bonding curve sell`,
+          `IITEBCH bonding curve sell`,
         );
         return NextResponse.json({
           success: true,
@@ -334,7 +339,7 @@ export async function POST(request: NextRequest) {
       // --- Server-side signing path ---
       let userUtxos;
       try {
-        userUtxos = await provider.getUtxos(sellerAddress);
+        userUtxos = await provider.getUtxos(normalizedSeller);
       } catch (err) {
         throw new NetworkError('Failed to fetch wallet UTXOs', err);
       }
@@ -359,13 +364,13 @@ export async function POST(request: NextRequest) {
           ),
         );
 
-      const sellerTokenAddress = toTokenAddress(sellerAddress, network);
+      const sellerTokenAddress = toTokenAddress(normalizedSeller, network);
       const builder = await buildSellTransaction(
         instance,
         tokensToSellBigInt,
         userTokenUtxo,
         userBchUtxos[0],
-        sellerAddress,
+        normalizedSeller,
         sellerTokenAddress, // token change destination — must be token-capable
         signer,
       );

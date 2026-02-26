@@ -38,7 +38,7 @@ export async function uploadToIPFS(
       metadata: {
         name: options?.name || file.name,
         keyvalues: {
-          app: 'ignitebch',
+          app: 'IITEBCH',
           type: 'token-image',
           ...options?.metadata,
         },
@@ -86,7 +86,7 @@ export async function uploadJSONToIPFS(
       metadata: {
         name: `${name}.json`,
         keyvalues: {
-          app: 'ignitebch',
+          app: 'IITEBCH',
           type: 'metadata',
         },
       },

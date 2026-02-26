@@ -10,6 +10,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ShareButton } from "@/components/social/ShareButton";
+import TokenPageClient from "./TokenPageClient";
 
 // Lazy load heavy chart components
 const TradingViewChart = dynamic(
@@ -221,12 +222,12 @@ export async function generateMetadata({ params }: TokenPageProps): Promise<Meta
 
   if (!token) {
     return {
-      title: "Token Not Found | IgniteBCH",
+      title: "Token Not Found | IITEBCH",
     };
   }
 
-  const title = `$${token.ticker} - ${token.name} | IgniteBCH`;
-  const description = token.description || `Trade $${token.ticker} on IgniteBCH, the Fair Launch Protocol on Bitcoin Cash.`;
+  const title = `$${token.ticker} - ${token.name} | IITEBCH`;
+  const description = token.description || `Trade $${token.ticker} on IITEBCH, the Fair Launch Protocol on Bitcoin Cash.`;
   // Construct the absolute image URL if using mock tokens or relative paths
   // Default to relative if it doesn't start with http
   const imageUrl = token.image?.startsWith("http")
@@ -263,7 +264,9 @@ export default async function TokenPage({ params }: TokenPageProps) {
   const token = mockTokens.find((t) => t.id === id);
 
   if (!token) {
-    notFound();
+    // Token not in mock data — render client-side fallback
+    // that checks localStorage for launched tokens
+    return <TokenPageClient tokenId={id} />;
   }
 
   const trades = getTradesForToken(token.id);

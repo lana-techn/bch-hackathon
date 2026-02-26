@@ -1,16 +1,16 @@
 # Hackathon Results Report
 
-## IgniteBCH - Fair Launch Token Platform on Bitcoin Cash
+## IITEBCH - Fair Launch Token Platform on Bitcoin Cash
 
 **Date:** February 23, 2026  
 **Event:** BCH Hackathon  
-**Team:** IgniteBCH Team
+**Team:** IITEBCH Team
 
 ---
 
 ## 📋 Executive Summary
 
-IgniteBCH successfully built a fair launch token platform on Bitcoin Cash with complete features: automated token creation, bonding curve trading, and integrated social features. The system has been tested and is fully functional on chipnet (testnet) with verified on-chain transactions.
+IITEBCH successfully built a fair launch token platform on Bitcoin Cash with complete features: automated token creation, bonding curve trading, and integrated social features. The system has been tested and is fully functional on chipnet (testnet) with verified on-chain transactions.
 
 ---
 

@@ -1,5 +1,5 @@
 /**
- * IgniteBCH — Typed Error Classes
+ * IITEBCH — Typed Error Classes
  *
  * Structured error hierarchy so callers can distinguish between
  * retryable network failures and hard validation/contract errors.
