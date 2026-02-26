@@ -116,7 +116,7 @@ export default function TokensPage() {
                     All <span className="text-neon">Tokens</span>
                   </h1>
                   <p className="text-text-dim mt-2">
-                    Browse all {mockTokens.length} tokens on IgniteBCH
+                    Browse all {mockTokens.length} tokens on IITEBCH
                   </p>
                 </div>
 
@@ -155,11 +155,10 @@ export default function TokensPage() {
                     <button
                       key={filter}
                       onClick={() => setActiveFilter(filter)}
-                      className={`px-4 py-2 font-[family-name:var(--font-heading)] text-xs uppercase tracking-wider border-2 transition-all ${
-                        activeFilter === filter
+                      className={`px-4 py-2 font-[family-name:var(--font-heading)] text-xs uppercase tracking-wider border-2 transition-all ${activeFilter === filter
                           ? "border-neon text-neon bg-neon/10"
                           : "border-border text-text-dim hover:border-text hover:text-text"
-                      }`}
+                        }`}
                     >
                       {filter}
                     </button>
