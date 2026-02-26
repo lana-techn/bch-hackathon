@@ -55,10 +55,10 @@ export function useWalletConnect() {
       const client = await SignClient.init({
         projectId: projectId!,
         metadata: {
-          name: 'IgniteBCH',
+          name: 'IITEBCH',
           description: 'Fair Launch Protocol on Bitcoin Cash',
-          url: typeof window !== 'undefined' ? window.location.origin : 'https://ignitebch.com',
-          icons: ['https://ignitebch.com/icon.png'],
+          url: typeof window !== 'undefined' ? window.location.origin : 'https://IITEBCH.com',
+          icons: ['https://IITEBCH.com/icon.png'],
         },
       });
 
